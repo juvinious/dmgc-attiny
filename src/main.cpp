@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
-#include <dmgc-ips-attiny85.ino>
+#include "dmgc-ips-attiny85.ino"
 
 struct _CONFIG {
 	SDL_Window * window;
