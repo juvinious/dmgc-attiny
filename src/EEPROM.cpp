@@ -33,3 +33,4 @@ uint8_t const * EEPROMClass::getConstDataPtr() const{
 }
 
 
+EEPROMClass EEPROM;

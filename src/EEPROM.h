@@ -1,5 +1,5 @@
-#ifndef EEPROM_h
-#define EEPROM_h
+#ifndef EEPROM_H
+#define EEPROM_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -54,8 +54,8 @@ protected:
   bool _dirty = false;
 };
 
-#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EEPROM)
+//#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EEPROM)
 extern EEPROMClass EEPROM;
-#endif
+//#endif
 
 #endif

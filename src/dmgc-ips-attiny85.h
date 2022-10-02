@@ -1,5 +1,7 @@
-#ifndef _dmgc_ips_attiny85_h
-#define _dmgc_ips_attiny85_h
+#ifndef DMGC_IPS_ATTINY85_H
+#define DMGC_IPS_ATTINY85_H
+
+#include "EEPROM.h"
 
 void setup();
 

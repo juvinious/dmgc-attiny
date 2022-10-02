@@ -12,7 +12,7 @@ main := src/main.cpp
 .PHONY: build
 
 build: $(source)
-	$(CC) $(source) $(ino) $(main) $(CFLAGS) $(OUT) $(LDFLAGS)
+	$(CC) $(ino) $(source) $(main) $(CFLAGS) $(OUT) $(LDFLAGS)
 
 run:
 	./$(NAME)
