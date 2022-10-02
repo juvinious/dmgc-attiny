@@ -1,5 +1,9 @@
-#ifndef _AVR_IOM328P_H_
-#define _AVR_IOM328P_H_ 1
+#ifndef _GLOBALS_H_
+#define _GLOBALS_H
+
+#include <stdint.h>
+
+#include "dmgc-ips-attiny85.h"
 
 /* Registers and associated bit numbers */
 
@@ -899,4 +903,48 @@
 #define SLEEP_MODE_EXT_STANDBY (0x07<<1)
 
 
-#endif  /* _AVR_IOM328P_H_ */
+/* Arduino stuff */
+#define HIGH 0x1
+#define LOW  0x0
+
+//GPIO FUNCTIONS
+#define INPUT             0x00
+#define INPUT_PULLUP      0x02
+#define INPUT_PULLDOWN_16 0x04 // PULLDOWN only possible for pin16
+#define OUTPUT            0x01
+#define OUTPUT_OPEN_DRAIN 0x03
+#define WAKEUP_PULLUP     0x05
+#define WAKEUP_PULLDOWN   0x07
+#define SPECIAL           0xF8 //defaults to the usable BUSes uart0rx/tx uart1tx and hspi
+#define FUNCTION_0        0x08
+#define FUNCTION_1        0x18
+#define FUNCTION_2        0x28
+#define FUNCTION_3        0x38
+#define FUNCTION_4        0x48
+
+
+void init(void);
+void initVariant(void);
+
+void pinMode(uint8_t pin, uint8_t mode);
+void digitalWrite(uint8_t pin, uint8_t val);
+int digitalRead(uint8_t pin);
+int analogRead(uint8_t pin);
+void analogReference(uint8_t mode);
+void analogWrite(uint8_t pin, int val);
+void analogWriteMode(uint8_t pin, int val, bool openDrain);
+void analogWriteFreq(uint32_t freq);
+void analogWriteResolution(int res);
+void analogWriteRange(uint32_t range);
+
+unsigned long pulseIn(uint8_t pin, uint8_t state, unsigned long timeout);
+unsigned long pulseInLong(uint8_t pin, uint8_t state, unsigned long timeout);
+
+void shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint8_t val);
+uint8_t shiftIn(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder);
+
+void outputLED(uint8_t x);
+
+void delay(uint32_t length);
+
+#endif

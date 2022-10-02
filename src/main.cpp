@@ -9,7 +9,7 @@ struct _CONFIG {
 } CONFIG;
 
 
-int setup() {
+int SDL2_Setup() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
 		printf("error initializing sdl. %s\n", SDL_GetError());
@@ -36,7 +36,7 @@ int setup() {
 	return 1;
 }
 
-void cleanup() {
+void SDL2_Cleanup() {
 	SDL_DestroyRenderer(CONFIG.renderer);
 	SDL_DestroyWindow(CONFIG.window);
 	SDL_Quit();
@@ -44,7 +44,7 @@ void cleanup() {
 
 int main(int argc,char* argv[]){
 
-	if (!setup()){
+	if (!SDL2_Setup()){
 		return 0;
 	}
 
@@ -70,7 +70,7 @@ int main(int argc,char* argv[]){
 		SDL_Delay(1000/30);
 	}
 
-	cleanup();
+	SDL2_Cleanup();
 
 	return 0;
 }

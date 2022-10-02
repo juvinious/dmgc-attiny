@@ -69,6 +69,26 @@ class Adafruit_NeoPixel {
 	void clear(void);
 	void updateLength(uint16_t n);
 	void updateType(neoPixelType t);
+
+	static uint32_t Color(uint8_t r, uint8_t g, uint8_t b) {
+    return ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+  }
+  /*!
+    @brief   Convert separate red, green, blue and white values into a
+             single "packed" 32-bit WRGB color.
+    @param   r  Red brightness, 0 to 255.
+    @param   g  Green brightness, 0 to 255.
+    @param   b  Blue brightness, 0 to 255.
+    @param   w  White brightness, 0 to 255.
+    @return  32-bit packed WRGB value, which can then be assigned to a
+             variable for later use or passed to the setPixelColor()
+             function. Packed WRGB format is predictable, regardless of
+             LED strand color order.
+  */
+  static uint32_t Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
+    return ((uint32_t)w << 24) | ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+  }
+  static uint32_t ColorHSV(uint16_t hue, uint8_t sat = 255, uint8_t val = 255);
 };
 
 #endif /* ENDIF ADAFRUIT_NEOPIXEL_H */
