@@ -1,6 +1,9 @@
 #include "Adafruit_NeoPixel.h"
 
+int Adafruit_NeoPixel::numLEDs = 0;
+
 Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, int16_t pin, uint16_t type){
+    numLEDs = n;
 }
 
 Adafruit_NeoPixel::Adafruit_NeoPixel(void){
@@ -29,4 +32,7 @@ void Adafruit_NeoPixel::clear(void){
 void Adafruit_NeoPixel::updateLength(uint16_t n){
 }
 void Adafruit_NeoPixel::updateType(neoPixelType t){
+}
+uint32_t Adafruit_NeoPixel::getPixelColor(uint16_t n) const {
+    return 0;
 }

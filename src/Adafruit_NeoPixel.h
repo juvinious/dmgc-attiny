@@ -53,6 +53,8 @@ typedef uint16_t neoPixelType;
 
 
 class Adafruit_NeoPixel {
+  private:
+  static int numLEDs;
   public:
 	Adafruit_NeoPixel(uint16_t n, int16_t pin, uint16_t type);
 	Adafruit_NeoPixel(void);
@@ -69,6 +71,9 @@ class Adafruit_NeoPixel {
 	void clear(void);
 	void updateLength(uint16_t n);
 	void updateType(neoPixelType t);
+
+  uint16_t numPixels(void) const { return numLEDs; }
+  uint32_t getPixelColor(uint16_t n) const;
 
 	static uint32_t Color(uint8_t r, uint8_t g, uint8_t b) {
     return ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
