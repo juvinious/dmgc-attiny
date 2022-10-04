@@ -22,23 +22,23 @@ public:
   template<typename T> 
   //T &get(int const address, T &t) volatile {
   void get(int const address, T &t) volatile {
-    if (address < 0 || address + sizeof(T) > _size)
+    /*if (address < 0 || address + sizeof(T) > _size)
       //return t;
 
     memcpy((uint8_t*) &t, _data + address, sizeof(T));
-    //return t;
+    //return t; */
   }
 
   template<typename T> 
   //const T &put(int const address, const T &t) volatile {
   void put(int const address, const T &t) volatile {
-    if (address < 0 || address + sizeof(T) > _size)
+    /*if (address < 0 || address + sizeof(T) > _size)
       //return t;
     if (memcmp(_data + address, (const uint8_t*)&t, sizeof(T)) != 0) {
       _dirty = true;
       memcpy(_data + address, (const uint8_t*)&t, sizeof(T));
     }
-
+    */
     //return t;
   }
 

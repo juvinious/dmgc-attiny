@@ -5,19 +5,24 @@
 #include "configuration.h"
 
 
-int main(int argc,char* argv[]){
+int main(int argc,char* argv[])
+{
+	Configuration * config = Configuration::Get();
 
-	Configuration config;
-	
-	if (!config.setup()) {
+	if (!config->setup()) {
 		return 0;
 	}
+
+	// Setup arduino call
+	setup();
+
+	config->createText("Testing....");
 	
 	bool running = true;
 	while (running){
-		while(SDL_PollEvent(&config.event))
+		while(SDL_PollEvent(&config->event))
 		{
-			switch(config.event.type)
+			switch(config->event.type)
 			{
 				case SDL_QUIT:
 					running = false;
@@ -28,12 +33,17 @@ int main(int argc,char* argv[]){
 					break;
 			}
 		}
-		SDL_SetRenderDrawColor(config.renderer, 0, 0, 0, 255);
-		SDL_RenderClear(config.renderer);
+		
+		config->screenClear();
 
-		SDL_RenderPresent(config.renderer);
-		SDL_Delay(1000/30);
+		config->renderText();
+
+		config->screenRender();
+
+		config->delay();
 	}
+
+	Configuration::Destroy();
 
 	return 0;
 }

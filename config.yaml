@@ -4,6 +4,60 @@ window-x: 640
 window-y: 480
 ttf-font: dejavusans.ttf
 
+# Delay constants (simplified)
+ticks: 1000
+frames: 30
+
 # Keys
 
 # Screen
+
+# Led placement
+led0:
+  position:
+    x: 0
+    y: 220
+    width: 10
+    height: 10
+led1:
+  position:
+    x: 15
+    y: 220
+    width: 10
+    height: 10
+led2:
+  position:
+    x: 20
+    y: 220
+    width: 10
+    height: 10
+led3:
+  position:
+    x: 25
+    y: 220
+    width: 10
+    height: 10
+led4:
+  position:
+    x: 30
+    y: 220
+    width: 10
+    height: 10
+led5:
+  position:
+    x: 35
+    y: 220
+    width: 10
+    height: 10
+led6:
+  position:
+    x: 40
+    y: 220
+    width: 10
+    height: 10
+led7:
+  position:
+    x: 45
+    y: 220
+    width: 10
+    height: 10
