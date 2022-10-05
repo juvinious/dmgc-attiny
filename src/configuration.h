@@ -13,7 +13,6 @@ class Led
     ~Led();
 
     SDL_Rect coords;
-    SDL_Color color;
 };
 
 class Configuration 
@@ -29,6 +28,8 @@ private:
 
     int totalLeds;
     std::vector<Led *> leds;
+    int brightness; 
+    SDL_Color ledColor;
 
     static Configuration * _config;
 	Configuration();
@@ -47,11 +48,22 @@ public:
     void screenClear();
     void screenRender();
 
+    void renderLeds();
+
     void delay(int override = -1);
 
     void setTotalLeds (int leds);
-
     int getTotalLeds() const;
+
+    void setBrightness(int brightness) {
+        this->brightness = brightness;
+    }
+
+    int getBrightness() const {
+        return this->brightness;
+    }
+
+    void setPixelColor(int r, int g, int b);
 
 	SDL_Window * window;
 	SDL_Renderer * renderer;

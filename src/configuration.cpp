@@ -48,6 +48,7 @@ Configuration::Configuration():
     yaml(YAML::LoadFile(CONFIGURATION_FILE)),
     title("main"),
     totalLeds(0),
+    brightness(0),
     window(NULL),
     renderer(NULL),
     font(NULL),
@@ -147,6 +148,20 @@ void Configuration::screenRender()
     SDL_RenderPresent(renderer);
 }
 
+void Configuration::renderLeds() 
+{
+    if (leds.empty()){
+        return;
+    }
+    
+    SDL_SetRenderDrawColor(renderer, ledColor.r, ledColor.g, ledColor.b, 255);
+    // printf("r: %d g: %d b: %d", ledColor.r, ledColor.g, ledColor.b);
+    for (int i = 0; i < totalLeds; i++)
+    {
+        SDL_RenderFillRect(renderer, &leds[i]->coords);
+    }
+}
+
 void Configuration::delay(int override)
 {
     if (override != 1)
@@ -173,14 +188,22 @@ void Configuration::setTotalLeds (int leds)
         led->coords.y = yaml[currentLed]["position"]["y"].as<int>();
         led->coords.w = yaml[currentLed]["position"]["width"].as<int>();
         led->coords.h = yaml[currentLed]["position"]["height"].as<int>();
-
-        printf("Got led x: %d y: %d w: %d h: %d\n", led->coords.x, led->coords.y, led->coords.w, led->coords.h);
+        // printf("Got led x: %d y: %d w: %d h: %d\n", led->coords.x, led->coords.y, led->coords.w, led->coords.h);
     
-        this->leds.push_back(new Led);
+        this->leds.push_back(led);
     }
 }
 
 int Configuration::getTotalLeds() const
 {
     return this->totalLeds;
+}
+
+void Configuration::setPixelColor(int r, int g, int b){
+    if (this->leds.empty()){
+        return;
+    }
+    ledColor.r = r;
+    ledColor.g = g;
+    ledColor.b = b;
 }

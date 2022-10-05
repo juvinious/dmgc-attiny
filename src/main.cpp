@@ -38,9 +38,11 @@ int main(int argc,char* argv[])
 
 		config->renderText();
 
+		loop();
+
 		config->screenRender();
 
-		config->delay();
+		//config->delay();
 	}
 
 	Configuration::Destroy();
