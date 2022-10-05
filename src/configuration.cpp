@@ -48,6 +48,7 @@ Configuration::Configuration():
     yaml(YAML::LoadFile(CONFIGURATION_FILE)),
     title("main"),
     totalLeds(0),
+    ledInfo(true),
     brightness(0),
     window(NULL),
     renderer(NULL),
@@ -61,8 +62,22 @@ Configuration::Configuration():
     windowY = yaml["window-y"].as<int>();
     ticks = yaml["ticks"].as<int>();
     frames = yaml["frames"].as<int>();
+    ledInfo = yaml["led-info"].as<bool>();
     openFont = yaml["ttf-font"].as<std::string>();
     background = yaml["background"].as<std::string>();
+
+    // Setup keys
+    keys[NAVIGATION] = SDLK_a;
+    keys[NAVIGATION_UP] = SDLK_a;
+    keys[NAVIGATION_DOWN] = SDLK_a;
+    keys[UP] = SDLK_UP;
+    keys[DOWN] = SDLK_DOWN;
+    keys[LEFT] = SDLK_LEFT;
+    keys[RIGHT] = SDLK_RIGHT;
+    keys[SELECT] = SDLK_TAB;
+    keys[START] = SDLK_RETURN;
+    keys[A] = SDLK_a;
+    keys[B] = SDLK_b;
 }
 Configuration::~Configuration() 
 {
@@ -129,7 +144,33 @@ bool Configuration::setup(){
     return true;
 }
 
-void Configuration::createText(std::string message)
+void Configuration::handleKeys(bool &running) {
+    while(SDL_PollEvent(&event))
+    {
+        switch(event.type)
+        {
+            case SDL_QUIT:
+                running = false;
+                break;
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym)
+                {
+                    case SDLK_ESCAPE:
+                        running = false;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case SDL_KEYUP:
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+void Configuration::setText(std::string message)
 {
     SDL_Color white = { 255, 255, 255 };
     // Release surface before reusing
@@ -144,9 +185,9 @@ void Configuration::createText(std::string message)
     fontTexture = SDL_CreateTextureFromSurface(renderer, fontSurface);
 }
 
-void Configuration::renderText()
+void Configuration::renderText(int x, int y, int w, int h)
 {
-    SDL_Rect rect = { 0,0,windowX/2, windowY/4 };
+    SDL_Rect rect = { x,y,w,h };
     SDL_RenderCopy(renderer, fontTexture, NULL, &rect);
 }
 
@@ -154,7 +195,8 @@ void Configuration::renderBackground()
 {
     int width=0, height=0;
     SDL_QueryTexture(backgroundTexture, NULL, NULL, &width, &height);
-    SDL_Rect rect = { 0,windowY-height,width, height };
+    //SDL_Rect rect = { 0,windowY-height,width, height };
+    SDL_Rect rect = { 0, 0, width, height };
     SDL_RenderCopy(renderer, backgroundTexture, NULL, &rect);
 }
 
@@ -175,10 +217,16 @@ void Configuration::renderLeds()
         return;
     }
     
-    SDL_SetRenderDrawColor(renderer, ledColor.r, ledColor.g, ledColor.b, 255);
+    //SDL_SetRenderDrawColor(renderer, ledColor.r, ledColor.g, ledColor.b, 255);
     // printf("r: %d g: %d b: %d", ledColor.r, ledColor.g, ledColor.b);
     for (int i = 0; i < totalLeds; i++)
     {
+        // Render leds if enabled
+        if (ledInfo){
+            setText(leds[i]->description);
+            renderText(leds[i]->coords.x, leds[i]->coords.y - 30, leds[i]->coords.w, 25);
+        }
+        SDL_SetRenderDrawColor(renderer, leds[i]->ledColor.r, leds[i]->ledColor.g, leds[i]->ledColor.b, ledColor.a);
         SDL_RenderFillRect(renderer, &leds[i]->coords);
     }
 }
@@ -209,6 +257,7 @@ void Configuration::setTotalLeds (int leds)
         led->coords.y = yaml[currentLed]["position"]["y"].as<int>();
         led->coords.w = yaml[currentLed]["position"]["width"].as<int>();
         led->coords.h = yaml[currentLed]["position"]["height"].as<int>();
+        led->description = yaml[currentLed]["description"].as<std::string>();
         // printf("Got led x: %d y: %d w: %d h: %d\n", led->coords.x, led->coords.y, led->coords.w, led->coords.h);
     
         this->leds.push_back(led);
@@ -220,11 +269,14 @@ int Configuration::getTotalLeds() const
     return this->totalLeds;
 }
 
-void Configuration::setPixelColor(int r, int g, int b){
+void Configuration::setPixelColor(int led, int r, int g, int b){
     if (this->leds.empty()){
         return;
     }
     ledColor.r = r;
     ledColor.g = g;
     ledColor.b = b;
+    this->leds[led]->ledColor.r = r;
+    this->leds[led]->ledColor.g = g;
+    this->leds[led]->ledColor.b = b;
 }

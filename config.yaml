@@ -6,59 +6,81 @@ ttf-font: dejavusans.ttf
 
 # Delay constants (simplified)
 ticks: 1000
-frames: 10
+frames: 60
 
 # Keys
+# Reference: https://wiki.libsdl.org/SDLKeycodeLookup
+keys:
+  nav: 97
+  nav-up: 97
+  nav-down: 97
+  up: 97
+  down: 97
+  left: 97
+  right: 97
+  select: 97
+  start: 97
+  a: 97
+  b: 97
 
 # Screen
 background: assets/half-board.png
+led-info: true
 
 # Led placement
 led0:
   position:
-    x: 150
-    y: 220
-    width: 30
-    height: 10
+    x: 100
+    y: 110
+    width: 28
+    height: 22
+  description: up
 led1:
   position:
-    x: 125
-    y: 230
-    width: 30
-    height: 10
+    x: 136
+    y: 140
+    width: 22
+    height: 28
+  description: right
 led2:
   position:
-    x: 65
-    y: 220
-    width: 30
-    height: 10
+    x: 100
+    y: 172
+    width: 28
+    height: 22
+  description: down
 led3:
   position:
-    x: 95
-    y: 220
-    width: 30
-    height: 10
+    x: 72
+    y: 140
+    width: 22
+    height: 28
+  description: left
 led4:
   position:
-    x: 125
-    y: 220
-    width: 30
-    height: 10
+    x: 225
+    y: 345
+    width: 28
+    height: 22
+  description: select
 led5:
   position:
-    x: 155
-    y: 220
-    width: 30
-    height: 10
+    x: 344
+    y: 345
+    width: 28
+    height: 22
+  description: start
 led6:
   position:
-    x: 185
-    y: 220
-    width: 30
-    height: 10
+    x: 444
+    y: 200
+    width: 28
+    height: 22
+  description: b
 led7:
   position:
-    x: 215
-    y: 220
-    width: 30
-    height: 10
+    x: 558
+    y: 146
+    width: 28
+    height: 22
+  description: a

@@ -2,10 +2,34 @@
 #define _CONFIGURATION_H
 
 #include <vector>
+#include <map>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include <yaml-cpp/yaml.h>
+
+/*
+class Key
+{
+    public:
+    int originalValue;
+    int remappedValue;
+};
+*/
+enum KEY
+{
+    NAVIGATION = SDLK_a,
+    NAVIGATION_UP = SDLK_a,
+    NAVIGATION_DOWN = SDLK_a,
+    UP = SDLK_UP,
+    DOWN = SDLK_DOWN,
+    LEFT = SDLK_LEFT,
+    RIGHT = SDLK_RIGHT,
+    SELECT = SDLK_TAB,
+    START = SDLK_RETURN,
+    A = SDLK_a,
+    B = SDLK_b
+};
 
 class Led
 {
@@ -14,6 +38,8 @@ class Led
     ~Led();
 
     SDL_Rect coords;
+    SDL_Color ledColor;
+    std::string description;
 };
 
 class Configuration 
@@ -28,8 +54,11 @@ private:
     int ticks;
     int frames;
 
+    std::map<enum KEY, int> keys;
+
     int totalLeds;
     std::vector<Led *> leds;
+    bool ledInfo;
     int brightness; 
     SDL_Color ledColor;
 
@@ -44,8 +73,10 @@ public:
 
 	bool setup();
 
-    void createText(std::string message);
-    void renderText();
+    void handleKeys(bool &running);
+
+    void setText(std::string message);
+    void renderText(int x, int y, int w, int h);
 
     void renderBackground();
 
@@ -61,13 +92,26 @@ public:
 
     void setBrightness(int brightness) {
         this->brightness = brightness;
+        this->ledColor.a = brightness;
     }
 
     int getBrightness() const {
         return this->brightness;
     }
 
-    void setPixelColor(int r, int g, int b);
+    void setPixelColor(int led, int r, int g, int b);
+
+    SDL_Color & getPixelColor() {
+        return this->ledColor;
+    }
+
+    int getWidth() const {
+        return this->windowX;
+    }
+
+    int getHeight() const {
+        return this->windowY;
+    }
 
 	SDL_Window * window;
 	SDL_Renderer * renderer;

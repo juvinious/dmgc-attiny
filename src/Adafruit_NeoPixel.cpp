@@ -25,7 +25,7 @@ void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t 
 void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w){
 }
 void Adafruit_NeoPixel::setPixelColor(uint16_t n, _Color c){
-    Configuration::Get()->setPixelColor(c.r, c.g, c.b);
+    Configuration::Get()->setPixelColor(n, c.r, c.g, c.b);
 }
 #if 0
 void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint32_t c){

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "dmgc-ips-attiny85.h"
@@ -15,36 +16,22 @@ int main(int argc,char* argv[])
 
 	// Setup arduino call
 	setup();
-
-	config->createText("Testing....");
 	
 	bool running = true;
 	while (running){
-		while(SDL_PollEvent(&config->event))
-		{
-			switch(config->event.type)
-			{
-				case SDL_QUIT:
-					running = false;
-					break;
-				case SDL_KEYDOWN:
-					break;
-				default:
-					break;
-			}
-		}
+		
+		config->handleKeys(running);
 		
 		config->screenClear();
 
-		config->renderText();
-
-		// config->renderBackground();
-
+		// Arduino loop
 		loop();
 
-		config->screenRender();
+		config->setText("Current color - red: " + std::to_string(config->getPixelColor().r) + " | green: " + std::to_string(config->getPixelColor().g) + " | blue " + std::to_string(config->getPixelColor().b));
 
-		//config->delay();
+		config->renderText(0, config->getHeight() - 40, config->getWidth(), 30);
+
+		config->screenRender();
 	}
 
 	Configuration::Destroy();
