@@ -4,6 +4,7 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 #include <yaml-cpp/yaml.h>
 
 class Led
@@ -23,6 +24,7 @@ private:
 	int windowX;
 	int windowY;
 	std::string openFont;
+    std::string background;
     int ticks;
     int frames;
 
@@ -44,6 +46,8 @@ public:
 
     void createText(std::string message);
     void renderText();
+
+    void renderBackground();
 
     void screenClear();
     void screenRender();
@@ -71,6 +75,7 @@ public:
 	TTF_Font * font;
     SDL_Surface * fontSurface;
     SDL_Texture * fontTexture;
+    SDL_Texture * backgroundTexture;
 };
 
 #endif

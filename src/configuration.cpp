@@ -53,7 +53,8 @@ Configuration::Configuration():
     renderer(NULL),
     font(NULL),
     fontSurface(NULL),
-    fontTexture(NULL)
+    fontTexture(NULL),
+    backgroundTexture(NULL)
 {
     title = yaml["title"].as<std::string>();
     windowX = yaml["window-x"].as<int>();
@@ -61,6 +62,7 @@ Configuration::Configuration():
     ticks = yaml["ticks"].as<int>();
     frames = yaml["frames"].as<int>();
     openFont = yaml["ttf-font"].as<std::string>();
+    background = yaml["background"].as<std::string>();
 }
 Configuration::~Configuration() 
 {
@@ -80,6 +82,10 @@ Configuration::~Configuration()
     if (fontSurface != NULL){
         SDL_FreeSurface(fontSurface);
         SDL_DestroyTexture(fontTexture);
+    }
+
+    if (backgroundTexture != NULL){
+        SDL_DestroyTexture(backgroundTexture);
     }
 
     TTF_Quit();
@@ -113,6 +119,13 @@ bool Configuration::setup(){
         return false;
     }
 
+    /* Create background */
+    if (!(backgroundTexture = IMG_LoadTexture(renderer, background.c_str())))
+    {
+        printf("Couldn't load background image: %s\n", IMG_GetError());
+        return false;
+    }
+
     return true;
 }
 
@@ -135,6 +148,14 @@ void Configuration::renderText()
 {
     SDL_Rect rect = { 0,0,windowX/2, windowY/4 };
     SDL_RenderCopy(renderer, fontTexture, NULL, &rect);
+}
+
+void Configuration::renderBackground()
+{
+    int width=0, height=0;
+    SDL_QueryTexture(backgroundTexture, NULL, NULL, &width, &height);
+    SDL_Rect rect = { 0,windowY-height,width, height };
+    SDL_RenderCopy(renderer, backgroundTexture, NULL, &rect);
 }
 
 void Configuration::screenClear()

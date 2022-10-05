@@ -14,6 +14,7 @@ Adafruit_NeoPixel::~Adafruit_NeoPixel(){
 void Adafruit_NeoPixel::begin(void){
 }
 void Adafruit_NeoPixel::show(void){
+    Configuration::Get()->renderBackground();
     Configuration::Get()->renderLeds();
     Configuration::Get()->screenRender();
 }

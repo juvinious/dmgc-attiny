@@ -38,6 +38,8 @@ int main(int argc,char* argv[])
 
 		config->renderText();
 
+		// config->renderBackground();
+
 		loop();
 
 		config->screenRender();

@@ -2,7 +2,7 @@ NAME := main
 OUT := -o main
 CFLAGS := -I ./ -I ./src -Wall -Werror -std=c++14 -pedantic -ggdb
 #CFLAGS := -I ./ -I ./src -Wall -Werror -pedantic -ggdb -lSDL2
-LDFLAGS := -lSDL2 -lSDL2_ttf -lyaml-cpp
+LDFLAGS := -lSDL2 -lSDL2_ttf -lSDL2_image -lyaml-cpp
 CC := g++
 
 ino := -x c++ src/dmgc-ips-attiny85.ino

@@ -11,6 +11,7 @@ frames: 10
 # Keys
 
 # Screen
+background: assets/half-board.png
 
 # Led placement
 led0:
