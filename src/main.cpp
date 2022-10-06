@@ -2,7 +2,7 @@
 #include <string>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include "dmgc-ips-attiny85.h"
+#include "arduino_defs.h"
 #include "configuration.h"
 
 
@@ -16,6 +16,8 @@ int main(int argc,char* argv[])
 
 	// Setup arduino call
 	setup();
+
+	config->toggleSetupCompleted();
 	
 	bool running = true;
 	while (running){

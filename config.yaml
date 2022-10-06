@@ -6,7 +6,7 @@ ttf-font: dejavusans.ttf
 
 # Delay constants (simplified)
 ticks: 1000
-frames: 60
+frames: 30
 
 # Keys
 # Reference: https://wiki.libsdl.org/SDLKeycodeLookup
@@ -14,12 +14,12 @@ keys:
   nav: 97
   nav-up: 97
   nav-down: 97
-  up: 97
-  down: 97
-  left: 97
-  right: 97
-  select: 97
-  start: 97
+  up: 1073741906
+  down: 1073741905
+  left: 1073741904
+  right: 1073741903
+  select: 9
+  start: 13
   a: 97
   b: 97
 

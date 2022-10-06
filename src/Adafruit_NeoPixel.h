@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "globals.h"
+#include "arduino_defs.h"
 
 // RGB NeoPixel permutations; white and red offsets are always same
 // Offset:         W        R        G        B

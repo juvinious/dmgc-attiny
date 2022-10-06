@@ -6,7 +6,7 @@ LDFLAGS := -lSDL2 -lSDL2_ttf -lSDL2_image -lyaml-cpp
 CC := g++
 
 ino := -x c++ src/dmgc-ips-attiny85.ino
-source := src/globals.cpp src/EEPROM.cpp src/Adafruit_NeoPixel.cpp src/configuration.cpp
+source := src/arduino_defs.cpp src/EEPROM.cpp src/Adafruit_NeoPixel.cpp src/configuration.cpp
 main := src/main.cpp
 
 .PHONY: build

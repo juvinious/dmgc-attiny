@@ -16,7 +16,7 @@ class Key
     int remappedValue;
 };
 */
-enum KEY
+enum KEYTYPE
 {
     NAVIGATION = SDLK_a,
     NAVIGATION_UP = SDLK_a,
@@ -31,12 +31,51 @@ enum KEY
     B = SDLK_b
 };
 
-class Led
-{
-    public:
-    Led();
-    ~Led();
+class KeyValue {
+public:
+    KeyValue(enum KEYTYPE type);
+    KeyValue(enum KEYTYPE type, int value);
+    ~KeyValue();
 
+    void updateValue(int value){
+        this->value = value;
+    }
+
+    void press() {
+        this->down = true;
+    }
+    
+    void release() {
+        this->down = false;
+    }
+
+    bool isDown() const {
+        return this->down;
+    }
+
+private:
+    enum KEYTYPE type;
+    int value;
+    bool down;
+};
+
+class KeyHandler 
+{
+public:
+    KeyHandler();
+    ~KeyHandler();
+
+    void setKey(enum KEYTYPE type, int value);
+
+    KeyValue * getKey(enum KEYTYPE type);
+
+private:
+    std::map<enum KEYTYPE, KeyValue *> keys;
+};
+
+
+struct Led
+{
     SDL_Rect coords;
     SDL_Color ledColor;
     std::string description;
@@ -54,13 +93,15 @@ private:
     int ticks;
     int frames;
 
-    std::map<enum KEY, int> keys;
+    KeyHandler keys;
 
     int totalLeds;
     std::vector<Led *> leds;
     bool ledInfo;
     int brightness; 
     SDL_Color ledColor;
+
+    bool setupComplete;
 
     static Configuration * _config;
 	Configuration();
@@ -111,6 +152,14 @@ public:
 
     int getHeight() const {
         return this->windowY;
+    }
+
+    void toggleSetupCompleted(){
+        this->setupComplete = !this->setupComplete;
+    }
+
+    bool isSetupComplete() const {
+        return this->setupComplete;
     }
 
 	SDL_Window * window;

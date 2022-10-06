@@ -1,4 +1,4 @@
-#include "globals.h"
+#include "arduino_defs.h"
 #include "configuration.h"
 
 void init(void){
@@ -80,4 +80,5 @@ uint8_t shiftIn(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder){
 
 void delay(uint32_t length){
     Configuration::Get()->delay(length);   
+    // printf("Delaying %d            \r", length);
 }

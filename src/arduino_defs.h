@@ -1,9 +1,9 @@
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#ifndef ARDUINO_DEFS_H
+#define ARDUINO_DEFS_H
 
 #include <stdint.h>
 
-#include "dmgc-ips-attiny85.h"
+#include "EEPROM.h"
 
 /* Registers and associated bit numbers */
 
@@ -946,5 +946,9 @@ uint8_t shiftIn(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder);
 void outputLED(uint8_t x);
 
 void delay(uint32_t length);
+
+void setup();
+void loop();
+
 
 #endif

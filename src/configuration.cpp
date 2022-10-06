@@ -17,14 +17,55 @@ public:
     }
 };
 
-Led::Led()
+KeyValue::KeyValue(enum KEYTYPE type):
+down(false)
+{
+    this->value = this->type = type;
+}
+KeyValue::KeyValue(enum KEYTYPE type, int value):
+down(false)
+{
+    this->type = type;
+    this->value = value;
+}
+
+KeyValue::~KeyValue()
 {
 
 }
 
-Led::~Led()
+KeyHandler::KeyHandler()
 {
+    // Setup key defaults
+    keys[NAVIGATION] = new KeyValue(NAVIGATION);
+    keys[NAVIGATION_UP] = new KeyValue(NAVIGATION_UP);
+    keys[NAVIGATION_DOWN] = new KeyValue(NAVIGATION_DOWN);
+    keys[UP] = new KeyValue(UP);
+    keys[DOWN] = new KeyValue(DOWN);
+    keys[LEFT] = new KeyValue(LEFT);
+    keys[RIGHT] = new KeyValue(RIGHT);
+    keys[SELECT] = new KeyValue(SELECT);
+    keys[START] = new KeyValue(START);
+    keys[A] = new KeyValue(A);
+    keys[B] = new KeyValue(B);
+}
 
+KeyHandler::~KeyHandler()
+{
+    for(std::map<KEYTYPE, KeyValue *>::iterator i = keys.begin(); i != keys.end(); i++)
+    {
+        delete (i->second);
+    }
+}
+
+void KeyHandler::setKey(enum KEYTYPE type, int value)
+{
+    keys[type]->updateValue(value);
+}
+
+KeyValue * KeyHandler::getKey(enum KEYTYPE type)
+{
+    return keys[type];
 }
 
 Configuration * Configuration::Get() 
@@ -50,6 +91,7 @@ Configuration::Configuration():
     totalLeds(0),
     ledInfo(true),
     brightness(0),
+    setupComplete(false),
     window(NULL),
     renderer(NULL),
     font(NULL),
@@ -66,18 +108,18 @@ Configuration::Configuration():
     openFont = yaml["ttf-font"].as<std::string>();
     background = yaml["background"].as<std::string>();
 
-    // Setup keys
-    keys[NAVIGATION] = SDLK_a;
-    keys[NAVIGATION_UP] = SDLK_a;
-    keys[NAVIGATION_DOWN] = SDLK_a;
-    keys[UP] = SDLK_UP;
-    keys[DOWN] = SDLK_DOWN;
-    keys[LEFT] = SDLK_LEFT;
-    keys[RIGHT] = SDLK_RIGHT;
-    keys[SELECT] = SDLK_TAB;
-    keys[START] = SDLK_RETURN;
-    keys[A] = SDLK_a;
-    keys[B] = SDLK_b;
+    // Load keys  
+    keys.setKey(NAVIGATION, yaml["keys"]["nav"].as<int>());
+    keys.setKey(NAVIGATION_UP, yaml["keys"]["nav-up"].as<int>());
+    keys.setKey(NAVIGATION_DOWN, yaml["keys"]["nav-down"].as<int>());
+    keys.setKey(UP, yaml["keys"]["up"].as<int>());
+    keys.setKey(DOWN, yaml["keys"]["down"].as<int>());
+    keys.setKey(LEFT, yaml["keys"]["left"].as<int>());
+    keys.setKey(RIGHT, yaml["keys"]["right"].as<int>());
+    keys.setKey(SELECT, yaml["keys"]["select"].as<int>());
+    keys.setKey(START, yaml["keys"]["start"].as<int>());
+    keys.setKey(A, yaml["keys"]["a"].as<int>());
+    keys.setKey(B, yaml["keys"]["b"].as<int>());
 }
 Configuration::~Configuration() 
 {
@@ -235,9 +277,10 @@ void Configuration::delay(int override)
 {
     if (override != 1)
     {
-        SDL_Delay(override/frames);
+        //SDL_Delay(override/frames);
+        // for (int i = 0; i < override;i++);
     } else {
-        SDL_Delay(ticks/frames);
+        // SDL_Delay(ticks/frames);
     }
 
 }
