@@ -37,8 +37,28 @@ public:
     KeyValue(enum KEYTYPE type, int value);
     ~KeyValue();
 
+    void update(int value, int pin)
+    {
+        this->value = value;
+        this->pin = pin;
+    }
+
     void updateValue(int value){
         this->value = value;
+    }
+    
+    void updatePin(int value){
+        this->value = value;
+    }
+
+    int getValue() const
+    {
+        return this->value;
+    }
+
+    int getPin() const
+    {
+        return this->pin;
     }
 
     void press() {
@@ -56,6 +76,7 @@ public:
 private:
     enum KEYTYPE type;
     int value;
+    int pin;
     bool down;
 };
 
@@ -65,12 +86,34 @@ public:
     KeyHandler();
     ~KeyHandler();
 
-    void setKey(enum KEYTYPE type, int value);
+    void setKey(enum KEYTYPE type, int value, int pin);
+
+    int getKeyValue(enum KEYTYPE type);
 
     KeyValue * getKey(enum KEYTYPE type);
 
 private:
     std::map<enum KEYTYPE, KeyValue *> keys;
+};
+
+class TextHandler
+{
+public:
+    TextHandler();
+    ~TextHandler();
+
+    bool setOpenFont(const std::string &);
+    void renderText(const std::string &, SDL_Renderer *, SDL_Rect &);
+
+private:
+    struct text {
+        SDL_Surface * fontSurface;
+        SDL_Texture * fontTexture;
+    };
+
+    std::string openFont;
+    TTF_Font * font;
+    std::map<std::string, text> collection;
 };
 
 
@@ -93,6 +136,7 @@ private:
     int ticks;
     int frames;
 
+    TextHandler messages;
     KeyHandler keys;
 
     int totalLeds;
@@ -102,6 +146,12 @@ private:
     SDL_Color ledColor;
 
     bool setupComplete;
+
+	SDL_Window * window;
+	SDL_Renderer * renderer;
+	SDL_Event event;
+    SDL_Texture * backgroundTexture;
+    SDL_Rect backgroundCoords;
 
     static Configuration * _config;
 	Configuration();
@@ -116,8 +166,7 @@ public:
 
     void handleKeys(bool &running);
 
-    void setText(std::string message);
-    void renderText(int x, int y, int w, int h);
+    void renderText(std::string, int x, int y, int w, int h);
 
     void renderBackground();
 
@@ -131,10 +180,7 @@ public:
     void setTotalLeds (int leds);
     int getTotalLeds() const;
 
-    void setBrightness(int brightness) {
-        this->brightness = brightness;
-        this->ledColor.a = brightness;
-    }
+    void setBrightness(int brightness);
 
     int getBrightness() const {
         return this->brightness;
@@ -161,14 +207,6 @@ public:
     bool isSetupComplete() const {
         return this->setupComplete;
     }
-
-	SDL_Window * window;
-	SDL_Renderer * renderer;
-	SDL_Event event;
-	TTF_Font * font;
-    SDL_Surface * fontSurface;
-    SDL_Texture * fontTexture;
-    SDL_Texture * backgroundTexture;
 };
 
 #endif

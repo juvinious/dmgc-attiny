@@ -1,6 +1,7 @@
 NAME := main
 OUT := -o main
-CFLAGS := -I ./ -I ./src -Wall -Werror -std=c++14 -pedantic -ggdb
+#CFLAGS := -I ./ -I ./src -Wall -Werror -std=c++14 -pedantic -ggdb -g -O0
+CFLAGS := -I ./ -I ./src -Wall -Werror -std=c++14 -pedantic
 #CFLAGS := -I ./ -I ./src -Wall -Werror -pedantic -ggdb -lSDL2
 LDFLAGS := -lSDL2 -lSDL2_ttf -lSDL2_image -lyaml-cpp
 CC := g++

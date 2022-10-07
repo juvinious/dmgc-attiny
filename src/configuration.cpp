@@ -17,6 +17,43 @@ public:
     }
 };
 
+TextHandler::TextHandler()
+{
+
+}
+TextHandler::~TextHandler()
+{
+    for(std::map<std::string, text>::iterator i = collection.begin(); i != collection.end(); i++)
+    {
+        text & t = i->second;
+        SDL_FreeSurface(t.fontSurface);
+        SDL_DestroyTexture(t.fontTexture);
+    }
+}
+bool TextHandler::setOpenFont(const std::string & openFont)
+{
+    this->openFont = openFont;
+    
+    TTF_Init();
+    if(!(this->font = TTF_OpenFont(this->openFont.c_str(), 25)))
+    {
+        return false;
+    }
+    return true;
+}
+void TextHandler::renderText(const std::string & message, SDL_Renderer * renderer, SDL_Rect & coords)
+{
+    if (collection.find(message) == collection.end()){
+        SDL_Color white = { 255, 255, 255 };
+        SDL_Surface * surface = TTF_RenderText_Solid(font, message.c_str(), white);
+        SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, surface);
+        collection[message] = text { surface, texture };
+    }
+    const text & t = collection.at(message);
+    SDL_RenderCopy(renderer, t.fontTexture, NULL, &coords);
+}
+
+
 KeyValue::KeyValue(enum KEYTYPE type):
 down(false)
 {
@@ -58,7 +95,7 @@ KeyHandler::~KeyHandler()
     }
 }
 
-void KeyHandler::setKey(enum KEYTYPE type, int value)
+void KeyHandler::setKey(enum KEYTYPE type, int value, int pin)
 {
     keys[type]->updateValue(value);
 }
@@ -67,6 +104,22 @@ KeyValue * KeyHandler::getKey(enum KEYTYPE type)
 {
     return keys[type];
 }
+
+int KeyHandler::getKeyValue(enum KEYTYPE type)
+{
+    return keys[type]->getValue();
+}
+
+void KeyHandler::pressKey(enum SDL_Keycode key)
+{
+
+}
+
+void KeyHandler::releaseKey(enum SDL_Keycode key)
+{
+
+}
+
 
 Configuration * Configuration::Get() 
 {
@@ -94,9 +147,6 @@ Configuration::Configuration():
     setupComplete(false),
     window(NULL),
     renderer(NULL),
-    font(NULL),
-    fontSurface(NULL),
-    fontTexture(NULL),
     backgroundTexture(NULL)
 {
     title = yaml["title"].as<std::string>();
@@ -105,21 +155,53 @@ Configuration::Configuration():
     ticks = yaml["ticks"].as<int>();
     frames = yaml["frames"].as<int>();
     ledInfo = yaml["led-info"].as<bool>();
-    openFont = yaml["ttf-font"].as<std::string>();
-    background = yaml["background"].as<std::string>();
+    background = yaml["background"]["image"].as<std::string>();
+    backgroundCoords = SDL_Rect {
+        yaml["background"]["position"]["x"].as<int>(),
+        yaml["background"]["position"]["y"].as<int>(),
+        yaml["background"]["position"]["width"].as<int>(),
+        yaml["background"]["position"]["height"].as<int>(),
+    };
 
-    // Load keys  
-    keys.setKey(NAVIGATION, yaml["keys"]["nav"].as<int>());
-    keys.setKey(NAVIGATION_UP, yaml["keys"]["nav-up"].as<int>());
-    keys.setKey(NAVIGATION_DOWN, yaml["keys"]["nav-down"].as<int>());
-    keys.setKey(UP, yaml["keys"]["up"].as<int>());
-    keys.setKey(DOWN, yaml["keys"]["down"].as<int>());
-    keys.setKey(LEFT, yaml["keys"]["left"].as<int>());
-    keys.setKey(RIGHT, yaml["keys"]["right"].as<int>());
-    keys.setKey(SELECT, yaml["keys"]["select"].as<int>());
-    keys.setKey(START, yaml["keys"]["start"].as<int>());
-    keys.setKey(A, yaml["keys"]["a"].as<int>());
-    keys.setKey(B, yaml["keys"]["b"].as<int>());
+    // Load keys 
+    for (YAML::const_iterator i = yaml["keys"].begin(); i != yaml["keys"].end(); i++){
+        // Check if keys are set
+        const std::string & key = i->first.as<std::string>();
+        YAML::Node value = i->second.as<YAML::Node>();
+        if (key == "nav"){
+            keys.setKey(NAVIGATION, value["keycode"].as<int>(), value["pin"].as<int>());
+        } else if (key == "nav-up")
+        {
+            keys.setKey(NAVIGATION_UP, value["keycode"].as<int>(), value["pin"].as<int>());
+        }else if (key == "nav-down")
+        {
+            keys.setKey(NAVIGATION_DOWN, value["keycode"].as<int>(), value["pin"].as<int>());
+        }else if (key == "up")
+        {
+            keys.setKey(UP, value["keycode"].as<int>(), value["pin"].as<int>());
+        }else if (key == "down")
+        {
+            keys.setKey(DOWN, value["keycode"].as<int>(), value["pin"].as<int>());
+        }else if (key == "left")
+        {
+            keys.setKey(LEFT, value["keycode"].as<int>(), value["pin"].as<int>());
+        }else if (key == "right")
+        {
+            keys.setKey(RIGHT, value["keycode"].as<int>(), value["pin"].as<int>());
+        }else if (key == "select")
+        {
+            keys.setKey(SELECT, value["keycode"].as<int>(), value["pin"].as<int>());
+        }else if (key == "start")
+        {
+            keys.setKey(START, value["keycode"].as<int>(), value["pin"].as<int>());
+        }else if (key == "a")
+        {
+            keys.setKey(A, value["keycode"].as<int>(), value["pin"].as<int>());
+        }else if (key == "b")
+        {
+            keys.setKey(B, value["keycode"].as<int>(), value["pin"].as<int>());
+        }
+    }
 }
 Configuration::~Configuration() 
 {
@@ -132,13 +214,6 @@ Configuration::~Configuration()
     }
     if (window != NULL) {
         SDL_DestroyWindow(window);
-    }
-    if (font != NULL){
-        TTF_CloseFont(font);
-    }
-    if (fontSurface != NULL){
-        SDL_FreeSurface(fontSurface);
-        SDL_DestroyTexture(fontTexture);
     }
 
     if (backgroundTexture != NULL){
@@ -169,9 +244,7 @@ bool Configuration::setup(){
     }
 
     /* Create font */
-    TTF_Init();
-    if(!(font = TTF_OpenFont(openFont.c_str(), 25)))
-    {
+    if (!messages.setOpenFont(yaml["ttf-font"].as<std::string>())){
         printf("Error creating font: %s\n", TTF_GetError());
         return false;
     }
@@ -212,34 +285,15 @@ void Configuration::handleKeys(bool &running) {
     }
 }
 
-void Configuration::setText(std::string message)
-{
-    SDL_Color white = { 255, 255, 255 };
-    // Release surface before reusing
-    if (fontSurface != NULL){
-        SDL_FreeSurface(fontSurface);
-    }
-    fontSurface = TTF_RenderText_Solid(font, message.c_str(), white);
-    // Same, if used before release
-    if (fontTexture != NULL){
-        SDL_DestroyTexture(fontTexture);
-    }
-    fontTexture = SDL_CreateTextureFromSurface(renderer, fontSurface);
-}
-
-void Configuration::renderText(int x, int y, int w, int h)
+void Configuration::renderText(std::string message, int x, int y, int w, int h)
 {
     SDL_Rect rect = { x,y,w,h };
-    SDL_RenderCopy(renderer, fontTexture, NULL, &rect);
+    messages.renderText(message, renderer, rect);
 }
 
 void Configuration::renderBackground()
 {
-    int width=0, height=0;
-    SDL_QueryTexture(backgroundTexture, NULL, NULL, &width, &height);
-    //SDL_Rect rect = { 0,windowY-height,width, height };
-    SDL_Rect rect = { 0, 0, width, height };
-    SDL_RenderCopy(renderer, backgroundTexture, NULL, &rect);
+    SDL_RenderCopy(renderer, backgroundTexture, NULL, &backgroundCoords);
 }
 
 void Configuration::screenClear()
@@ -259,14 +313,11 @@ void Configuration::renderLeds()
         return;
     }
     
-    //SDL_SetRenderDrawColor(renderer, ledColor.r, ledColor.g, ledColor.b, 255);
-    // printf("r: %d g: %d b: %d", ledColor.r, ledColor.g, ledColor.b);
     for (int i = 0; i < totalLeds; i++)
     {
         // Render leds if enabled
         if (ledInfo){
-            setText(leds[i]->description);
-            renderText(leds[i]->coords.x, leds[i]->coords.y - 30, leds[i]->coords.w, 25);
+            renderText(leds[i]->description, leds[i]->coords.x, leds[i]->coords.y - 30, leds[i]->coords.w, 25);
         }
         SDL_SetRenderDrawColor(renderer, leds[i]->ledColor.r, leds[i]->ledColor.g, leds[i]->ledColor.b, ledColor.a);
         SDL_RenderFillRect(renderer, &leds[i]->coords);
@@ -310,6 +361,15 @@ void Configuration::setTotalLeds (int leds)
 int Configuration::getTotalLeds() const
 {
     return this->totalLeds;
+}
+
+void Configuration::setBrightness(int brightness) {
+    this->brightness = brightness;
+    this->ledColor.a = brightness;
+    for (std::vector<Led *>::iterator i = leds.begin(); i != leds.end(); i++){
+        Led * led = *i;
+        led->ledColor.a = brightness;   
+    }
 }
 
 void Configuration::setPixelColor(int led, int r, int g, int b){

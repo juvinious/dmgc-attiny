@@ -6,28 +6,19 @@ ttf-font: dejavusans.ttf
 
 # Delay constants (simplified)
 ticks: 1000
-frames: 30
-
-# Keys
-# Reference: https://wiki.libsdl.org/SDLKeycodeLookup
-keys:
-  nav: 97
-  nav-up: 97
-  nav-down: 97
-  up: 1073741906
-  down: 1073741905
-  left: 1073741904
-  right: 1073741903
-  select: 9
-  start: 13
-  a: 97
-  b: 97
+frames: 60
 
 # Screen
-background: assets/half-board.png
+background: 
+  image: assets/half-board.png
+  position:
+    x: 0
+    y: 0
+    width: 640
+    height: 370
 led-info: true
 
-# Led placement
+# Led placement by order
 led0:
   position:
     x: 100
@@ -37,11 +28,11 @@ led0:
   description: up
 led1:
   position:
-    x: 136
+    x: 72
     y: 140
     width: 22
     height: 28
-  description: right
+  description: left
 led2:
   position:
     x: 100
@@ -51,11 +42,11 @@ led2:
   description: down
 led3:
   position:
-    x: 72
+    x: 136
     y: 140
     width: 22
     height: 28
-  description: left
+  description: right
 led4:
   position:
     x: 225
@@ -84,3 +75,40 @@ led7:
     width: 28
     height: 22
   description: a
+
+# Keys
+# Reference: https://wiki.libsdl.org/SDLKeycodeLookup
+keys:
+  nav: 
+    keycode: 1073742048 # Left CRTL
+    pin: 3
+  left: 
+    keycode: 1073741904 # Left
+    pin: 2
+  right: 
+    keycode: 1073741903 # Right
+    pin: 1
+  select: 
+    keycode: 9 # Tab
+    pin: 0
+#  nav-up: 
+#    keycode: 97
+#    pin: 1
+#  nav-down: 
+#    keycode: 97
+#    pin: 2
+#  up: 
+#    keycode: 1073741906
+#    pin: 3
+#  down: 
+#    keycode: 1073741905
+#    pin: 4
+#  start: 
+#    keycode: 13
+#    pin: 8
+#  a: 
+#    keycode: 97
+#    pin: 9
+#  b: 
+#    keycode: 97
+#    pin: 
