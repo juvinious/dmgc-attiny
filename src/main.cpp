@@ -29,9 +29,12 @@ int main(int argc,char* argv[])
 		// Arduino loop
 		loop();
 
-		const std::string currentColor = "Current color - red: " + std::to_string(config->getPixelColor().r) + " | green: " + std::to_string(config->getPixelColor().g) + " | blue " + std::to_string(config->getPixelColor().b);
+		const std::string colorInfo = "Color Info - red: " + std::to_string(config->getPixelColor().r) + 
+										 "green: " + std::to_string(config->getPixelColor().g) + 
+										 "blue: " + std::to_string(config->getPixelColor().b) + 
+										 "brightness: " + std::to_string(config->getBrightness());
 
-		config->renderText(currentColor, 0, config->getHeight() - 40, config->getWidth(), 30);
+		config->renderText(colorInfo, 0, config->getHeight() - 40, config->getWidth(), 30);
 
 		config->screenRender();
 	}

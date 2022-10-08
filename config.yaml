@@ -16,7 +16,11 @@ background:
     y: 0
     width: 640
     height: 370
-led-info: true
+
+# Led Details
+led:
+  info: true
+  alpha-modifier: 5 # 5 sdl is 0 - 255, 250 / 50 (10 possible positions)
 
 # Led placement by order
 led0:
@@ -75,6 +79,10 @@ led7:
     width: 28
     height: 22
   description: a
+
+# Inputs default to HIGH or LOW pull
+input:
+  pull: HIGH
 
 # Keys
 # Reference: https://wiki.libsdl.org/SDLKeycodeLookup

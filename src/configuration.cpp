@@ -1,6 +1,8 @@
 #include "configuration.h"
 
 #include <algorithm>
+#include <iostream>
+#include <algorithm>
 
 using namespace YAML;
 const char * CONFIGURATION_FILE = "config.yaml";
@@ -97,7 +99,7 @@ KeyHandler::~KeyHandler()
 
 void KeyHandler::setKey(enum KEYTYPE type, int value, int pin)
 {
-    keys[type]->updateValue(value);
+    keys[type]->update(value, pin);
 }
 
 KeyValue * KeyHandler::getKey(enum KEYTYPE type)
@@ -105,19 +107,44 @@ KeyValue * KeyHandler::getKey(enum KEYTYPE type)
     return keys[type];
 }
 
+KeyValue * KeyHandler::getKeyByPin(int pin)
+{
+    for(std::map<KEYTYPE, KeyValue *>::iterator i = keys.begin(); i != keys.end(); i++)
+    {
+        KeyValue * value = (i->second);
+        if (value->getPin() == pin){
+            return value;
+        }
+    }
+    return NULL;
+}
+
 int KeyHandler::getKeyValue(enum KEYTYPE type)
 {
     return keys[type]->getValue();
 }
 
-void KeyHandler::pressKey(enum SDL_Keycode key)
+void KeyHandler::pressKey(int key)
 {
-
+    for(std::map<KEYTYPE, KeyValue *>::iterator i = keys.begin(); i != keys.end(); i++)
+    {
+        KeyValue * value = (i->second);
+        if (value->getValue() == key){
+            value->press();
+        }
+    }
 }
 
-void KeyHandler::releaseKey(enum SDL_Keycode key)
+void KeyHandler::releaseKey(int key)
 {
-
+    for(std::map<KEYTYPE, KeyValue *>::iterator i = keys.begin(); i != keys.end(); i++)
+    {
+        KeyValue * value = (i->second);
+        if (value->getValue() == key){
+            value->release();
+            return;
+        }
+    }
 }
 
 
@@ -131,7 +158,7 @@ Configuration * Configuration::Get()
 
 void Configuration::Destroy()
 {
-    printf("Closing shop...\n");
+    printf("Shutting down...\n");
     if (_config != NULL)
     {
         delete _config;
@@ -143,7 +170,8 @@ Configuration::Configuration():
     title("main"),
     totalLeds(0),
     ledInfo(true),
-    brightness(0),
+    ledAlphaModifier(1),
+    brightness(50),
     setupComplete(false),
     window(NULL),
     renderer(NULL),
@@ -154,7 +182,8 @@ Configuration::Configuration():
     windowY = yaml["window-y"].as<int>();
     ticks = yaml["ticks"].as<int>();
     frames = yaml["frames"].as<int>();
-    ledInfo = yaml["led-info"].as<bool>();
+    ledInfo = yaml["led"]["info"].as<bool>();
+    ledAlphaModifier = yaml["led"]["alpha-modifier"].as<int>();
     background = yaml["background"]["image"].as<std::string>();
     backgroundCoords = SDL_Rect {
         yaml["background"]["position"]["x"].as<int>(),
@@ -163,11 +192,17 @@ Configuration::Configuration():
         yaml["background"]["position"]["height"].as<int>(),
     };
 
+    // Input 
+    std::string pull = yaml["input"]["pull"].as<std::string>();
+    std::transform(pull.begin(), pull.end(), pull.begin(), ::tolower);
+    keys.setPull(pull == "high" ? KeyHandler::PULLHIGH : KeyHandler::PULLLOW);
+
     // Load keys 
     for (YAML::const_iterator i = yaml["keys"].begin(); i != yaml["keys"].end(); i++){
         // Check if keys are set
         const std::string & key = i->first.as<std::string>();
         YAML::Node value = i->second.as<YAML::Node>();
+        // std::cout << value << std::endl;
         if (key == "nav"){
             keys.setKey(NAVIGATION, value["keycode"].as<int>(), value["pin"].as<int>());
         } else if (key == "nav-up")
@@ -243,6 +278,9 @@ bool Configuration::setup(){
         return false;
     }
 
+    // Set blending mode
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
     /* Create font */
     if (!messages.setOpenFont(yaml["ttf-font"].as<std::string>())){
         printf("Error creating font: %s\n", TTF_GetError());
@@ -276,13 +314,27 @@ void Configuration::handleKeys(bool &running) {
                     default:
                         break;
                 }
+                keys.pressKey(event.key.keysym.sym);
                 break;
             case SDL_KEYUP:
+                keys.releaseKey(event.key.keysym.sym);
                 break;
             default:
                 break;
         }
     }
+}
+
+int Configuration::checkKeyByPin(int pin){
+    KeyValue * key = keys.getKeyByPin(pin);
+
+    if (key){
+        return key->isDown();
+    }
+
+    //printf("Could not find key by pin: %d", pin);
+
+    return false;
 }
 
 void Configuration::renderText(std::string message, int x, int y, int w, int h)
@@ -319,19 +371,22 @@ void Configuration::renderLeds()
         if (ledInfo){
             renderText(leds[i]->description, leds[i]->coords.x, leds[i]->coords.y - 30, leds[i]->coords.w, 25);
         }
-        SDL_SetRenderDrawColor(renderer, leds[i]->ledColor.r, leds[i]->ledColor.g, leds[i]->ledColor.b, ledColor.a);
-        SDL_RenderFillRect(renderer, &leds[i]->coords);
+        // Disable if rgb is 0,0,0
+        if (ledColor.r || ledColor.g || ledColor.b)
+        {
+            SDL_SetRenderDrawColor(renderer, leds[i]->ledColor.r, leds[i]->ledColor.g, leds[i]->ledColor.b, leds[i]->ledColor.a);
+            SDL_RenderFillRect(renderer, &leds[i]->coords);
+        }
     }
 }
 
 void Configuration::delay(int override)
 {
-    if (override != 1)
+    if (override != -1)
     {
-        //SDL_Delay(override/frames);
-        // for (int i = 0; i < override;i++);
+        SDL_Delay(override);
     } else {
-        // SDL_Delay(ticks/frames);
+        SDL_Delay(ticks/frames);
     }
 
 }
@@ -352,6 +407,7 @@ void Configuration::setTotalLeds (int leds)
         led->coords.w = yaml[currentLed]["position"]["width"].as<int>();
         led->coords.h = yaml[currentLed]["position"]["height"].as<int>();
         led->description = yaml[currentLed]["description"].as<std::string>();
+        led->ledColor.a = 0;
         // printf("Got led x: %d y: %d w: %d h: %d\n", led->coords.x, led->coords.y, led->coords.w, led->coords.h);
     
         this->leds.push_back(led);
@@ -364,11 +420,11 @@ int Configuration::getTotalLeds() const
 }
 
 void Configuration::setBrightness(int brightness) {
-    this->brightness = brightness;
-    this->ledColor.a = brightness;
+    int modBrightness = brightness * ledAlphaModifier;
+    this->brightness = this->ledColor.a = modBrightness;
     for (std::vector<Led *>::iterator i = leds.begin(); i != leds.end(); i++){
         Led * led = *i;
-        led->ledColor.a = brightness;   
+        led->ledColor.a = modBrightness;   
     }
 }
 
@@ -379,7 +435,9 @@ void Configuration::setPixelColor(int led, int r, int g, int b){
     ledColor.r = r;
     ledColor.g = g;
     ledColor.b = b;
+    //ledColor.a = 255;
     this->leds[led]->ledColor.r = r;
     this->leds[led]->ledColor.g = g;
     this->leds[led]->ledColor.b = b;
+    //this->leds[led]->ledColor.a = 255;
 }

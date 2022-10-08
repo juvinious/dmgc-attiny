@@ -83,17 +83,39 @@ private:
 class KeyHandler 
 {
 public:
+
+    enum PULLTYPE
+    {
+        PULLHIGH = 0x01,
+        PULLLOW = 0x0
+    };
+
     KeyHandler();
     ~KeyHandler();
 
     void setKey(enum KEYTYPE type, int value, int pin);
 
+    void setPull(enum PULLTYPE type){
+        this->pull = type;
+    }
+
+    int getPull() const {
+        return this->pull;
+    }
+
     int getKeyValue(enum KEYTYPE type);
+
+    void pressKey(int key);
+
+    void releaseKey(int key);
 
     KeyValue * getKey(enum KEYTYPE type);
 
+    KeyValue * getKeyByPin(int pin);
+
 private:
     std::map<enum KEYTYPE, KeyValue *> keys;
+    enum PULLTYPE pull;
 };
 
 class TextHandler
@@ -142,7 +164,8 @@ private:
     int totalLeds;
     std::vector<Led *> leds;
     bool ledInfo;
-    int brightness; 
+    int ledAlphaModifier;
+    int brightness;
     SDL_Color ledColor;
 
     bool setupComplete;
@@ -165,6 +188,12 @@ public:
 	bool setup();
 
     void handleKeys(bool &running);
+
+    int pullDirection() const {
+        return keys.getPull();
+    }
+
+    int checkKeyByPin(int pin);
 
     void renderText(std::string, int x, int y, int w, int h);
 

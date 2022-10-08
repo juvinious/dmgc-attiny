@@ -34,6 +34,7 @@ void Adafruit_NeoPixel::fill(uint32_t c, uint16_t first, uint16_t count){
 }
 void Adafruit_NeoPixel::setBrightness(uint8_t b){
     Configuration::Get()->setBrightness(b);
+    // printf("Brightness %d\n", b);
 }
 void Adafruit_NeoPixel::clear(void){
     //Configuration::Get()->screenClear();
