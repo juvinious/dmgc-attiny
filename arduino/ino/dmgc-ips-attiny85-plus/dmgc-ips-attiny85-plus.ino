@@ -1,109 +1,19 @@
 #include <Adafruit_NeoPixel.h>
 #include <EEPROM.h>
 
-// #include <iostream>
-#include <map>
+#include "dmgc-utils.h"
 
-class Button 
-{
-public:
-  enum BUTTON_TYPE
-  {
-    NAVIGATION,
-    SELECT,
-    LEFT,
-    RIGHT
-  };
-  enum STATE
-  {
-    UP,
-    DOWN,
-    HOLD,
-    PRESS,
-    RELEASE
-  };
-
-  Button(enum BUTTON_TYPE type, int pin):
-  pin(pin),
-  type(type),
-  state(UP)
-  {
-    // Inputs *MUST NOT* use ATTINY's pull-ups. These will rely on the GBC CPU's internal pull-ups to 3.3V. The ATTINY is powered by 5V!!
-    pinMode(pin, INPUT);
-  }
-  ~Button()
-  {
-
-  }
-
-  enum STATE getState() const {
-    return state;
-  }
-
-  void poll(int pull)
-  {
-    switch (digitalRead(pin)){
-      case HIGH:
-        if (pull == LOW)
-        {
-          if (state == UP){
-            state = DOWN;
-          } else if (state == DOWN){
-            state = HOLD;
-          }
-        } else if (pull == HIGH)
-        {
-          if (state == DOWN){
-            state = PRESS;
-          } else if (state == HOLD){
-            state = RELEASE;
-          } else {
-            state = UP;
-          }
-        }
-        break;
-      case LOW:
-        if (pull == HIGH)
-        {
-          if (state == UP){
-            state = DOWN;
-          } else if (state == DOWN){
-            state = HOLD;
-          }
-        } else if (pull == LOW)
-        {
-          if (state == DOWN){
-            state = PRESS;
-          } else if (state == HOLD){
-            state = RELEASE;
-          } else {
-            state = UP;
-          }
-        }
-        break;
-      default:
-        state = UP;
-        break;
-    }
-  }
-
-private: 
-  int pin;
-  enum BUTTON_TYPE type;
-  enum STATE state;
-};
 
 // Which pin on the Arduino is connected to the NeoPixels?
 #define OUT           PCINT4 // PB4
 
 /* Button mapper and poller */
-std::map<Button::BUTTON_TYPE, Button *> buttons;
-
-void pollInput() {
-  for (std::map<Button::BUTTON_TYPE, Button *>::iterator i = buttons.begin(); i != buttons.end(); i++){
-    (*i->second).poll(HIGH);
-  }
-}
+ButtonHandler buttons(4);
+Button * NAVIGATION = NULL, 
+       * LEFT = NULL,
+       * RIGHT = NULL,
+       * SELECT = NULL;
+// const uint8_t TOTAL_BUTTONS;
 
 // Define order of LEDs in string, starting with 0
 #define l             1
@@ -137,10 +47,10 @@ volatile uint8_t blue[COLOR_QTY]  =  { 0,   0,   0,   0,   255, 255, 255, 255, 0
 void setup() {
 
   // Add buttons
-  buttons[Button::NAVIGATION] = new Button(Button::NAVIGATION, PCINT3);
-  buttons[Button::LEFT] = new Button(Button::LEFT, PCINT2);
-  buttons[Button::RIGHT] = new Button(Button::RIGHT, PCINT1);
-  buttons[Button::SELECT] = new Button(Button::SELECT, PCINT0);
+  NAVIGATION = buttons.add(PCINT3);
+  LEFT = buttons.add(PCINT2);
+  RIGHT = buttons.add(PCINT1);
+  SELECT = buttons.add(PCINT0);
 
   pixels.begin();
 
@@ -165,11 +75,11 @@ void setup() {
   pinMode(selbtn, INPUT);
   */
 
-  pollInput();
+  buttons.poll(HIGH);
 
   // Skip intro if nav switch is pushed in
   //if (digitalRead(pushbtn)==HIGH){
-  if (buttons[Button::NAVIGATION]->getState() == Button::UP)
+  if (NAVIGATION->getState() == Button::UP)
   {
 
       pixels.clear();
@@ -225,12 +135,12 @@ void loop() {
   outputLED(color_type);
 
   // Poll the buttons
-  pollInput();
+  buttons.poll(HIGH);
 
   // Down or hold
-  if (buttons[Button::NAVIGATION]->getState() == Button::DOWN || buttons[Button::NAVIGATION]->getState() == Button::HOLD){
+  if (NAVIGATION->isDown()){
     // std::cout << "Got down " << std::endl;
-    if (buttons[Button::LEFT]->getState() == Button::DOWN || buttons[Button::LEFT]->getState() == Button::HOLD) {
+    if (LEFT->isDown()) {
       // std::cout << "Got LEFT " << std::endl;
       brightness_change_flag = 1;
       if(brightness-BRIGHTNESS_INC<MIN_BRIGHTNESS){
@@ -241,7 +151,7 @@ void loop() {
       pixels.setBrightness(brightness);
       outputLED(color_type);
     }
-    if (buttons[Button::RIGHT]->getState() == Button::DOWN || buttons[Button::RIGHT]->getState() == Button::HOLD) {
+    if (RIGHT->isDown()) {
       // std::cout << "Got RIGHT " << std::endl;
       brightness_change_flag = 1;
       if(brightness+BRIGHTNESS_INC>MAX_BRIGHTNESS){
@@ -254,7 +164,7 @@ void loop() {
     }
   }
   // Released
-  if (buttons[Button::NAVIGATION]->getState() == Button::PRESS || buttons[Button::NAVIGATION]->getState() == Button::RELEASE){
+  if (NAVIGATION->isClicked()){
     if (brightness_change_flag != 1)
     {
       // std::cout << "Press and release... " << std::endl;
