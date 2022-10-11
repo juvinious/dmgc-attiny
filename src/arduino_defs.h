@@ -943,6 +943,7 @@ unsigned long pulseInLong(uint8_t pin, uint8_t state, unsigned long timeout);
 void shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint8_t val);
 uint8_t shiftIn(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder);
 
+void outputLED();
 void outputLED(uint8_t x);
 
 void delay(uint32_t length);

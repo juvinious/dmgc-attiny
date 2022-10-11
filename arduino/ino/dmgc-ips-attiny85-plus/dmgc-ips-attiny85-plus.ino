@@ -64,10 +64,14 @@ void setup() {
   buttons.poll(HIGH);
 
   // Skip intro if nav switch is pushed in
-  //if (digitalRead(pushbtn)==HIGH){
   if (NAVIGATION->getState() == DMGC_UTILS::Button::UP)
   {
-    DMGC_UTILS::dmgc_intro(pixels, red, green, blue);
+#if DMGC_SDL_ARDUINO_BUILD
+    // Skip intro/outro delays
+    DMGC_UTILS::dmgc_intro(pixels, true);
+#else
+    DMGC_UTILS::dmgc_intro(pixels);
+#endif
   }else{
     while(1){
 #if DMGC_SDL_ARDUINO_BUILD

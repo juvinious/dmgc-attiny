@@ -25,17 +25,14 @@ Adafruit_NeoPixel pixels(NUMPIXELS, OUT, NEO_GRB + NEO_KHZ800);
 volatile uint8_t brightness;
 volatile uint8_t color_type;
 const uint8_t    COLOR_QTY  = 9;
-const uint8_t    DEBOUNCE_DELAY = 50;
+const uint8_t    DEBOUNCE_DELAY = 150;
 const uint8_t    BRIGHTNESS_INC = 5;
 const uint8_t    MIN_BRIGHTNESS = 5;
 const uint8_t    MAX_BRIGHTNESS = 50;
 
 volatile uint8_t brightness_change_flag = 0;
 
-// cycles through different colors:    red  org  ylw  grn  cyan blue purp wht  off
-volatile uint8_t red[COLOR_QTY]   =  { 255, 255, 255, 0,   0,   0,   255, 255, 0};
-volatile uint8_t green[COLOR_QTY] =  { 0,   100, 200, 255, 255, 0,   0,   255, 0};
-volatile uint8_t blue[COLOR_QTY]  =  { 0,   0,   0,   0,   255, 255, 255, 255, 0};
+volatile uint8_t red = 128, green = 128, blue = 128;
 
 void setup() {
 
@@ -51,12 +48,15 @@ void setup() {
   EEPROM.get(1, color_type);
 
   // Check if EPROM data was corrupted, set brightness to max or min values
-  if (brightness>MAX_BRIGHTNESS){
+  /*if (brightness>MAX_BRIGHTNESS){
     brightness=MAX_BRIGHTNESS;
   }
   if (brightness<MIN_BRIGHTNESS){
     brightness=MIN_BRIGHTNESS;
-  }
+  }*/
+
+  // Start brightness in the middle
+  brightness = MAX_BRIGHTNESS / 2;
   
   pixels.setBrightness(brightness);
 
@@ -66,27 +66,56 @@ void setup() {
   //if (digitalRead(pushbtn)==HIGH){
   if (NAVIGATION->getState() == DMGC_UTILS::Button::UP)
   {
-    DMGC_UTILS::dmgc_intro(pixels, red, green, blue);
+#if DMGC_SDL_ARDUINO_BUILD
+    // Skip intro/outro delays
+    DMGC_UTILS::dmgc_intro(pixels, true);
+#else
+    DMGC_UTILS::dmgc_intro(pixels);
+#endif
   }else{
-    while(1){};
+    while(1){      
+#if DMGC_SDL_ARDUINO_BUILD
+    // So we can get out of this mess if pressed
+    buttons.poll(HIGH);
+    if (NAVIGATION->isClicked()) exit(0);
+    delay(DEBOUNCE_DELAY);
+#endif
+    };
   }
 //  while(!digitalRead(pushbtn)){
 //    delay(10);
 //  }
 }
 void loop() {
-  outputLED(color_type);
+  outputLED();
 
   // Poll the buttons
   buttons.poll(HIGH);
 
+  if (brightness_change_flag == 0){
+    if (brightness > MIN_BRIGHTNESS){
+      brightness -= BRIGHTNESS_INC;
+    }
+    if (brightness <= MIN_BRIGHTNESS){
+      brightness_change_flag = 1;
+    }
+  } else if (brightness_change_flag){
+    if (brightness < MAX_BRIGHTNESS){
+      brightness += BRIGHTNESS_INC;
+    }
+    if (brightness >= MAX_BRIGHTNESS){
+      brightness_change_flag = 0;
+    }
+  }
   delay(DEBOUNCE_DELAY);
-
 }
 
-void outputLED(uint8_t x){
+void outputLED(){
+  pixels.setBrightness(brightness);
+  pixels.show();
   for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
-    pixels.setPixelColor(i, pixels.Color(red[x],green[x],blue[x]));
+    //pixels.setPixelColor(i, pixels.Color(red[x],green[x],blue[x]));
+    pixels.setPixelColor(i, red, green, blue);
     pixels.show();   // Send the updated pixel colors to the hardware.
   }  
 }

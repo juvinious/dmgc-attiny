@@ -60,7 +60,7 @@ namespace DMGC_UTILS
         Button * buttonList;
     };
 
-    void dmgc_intro(Adafruit_NeoPixel &, volatile uint8_t * red, volatile uint8_t * green, volatile uint8_t * blue);
+    void dmgc_intro(Adafruit_NeoPixel &, bool skipDelays = false);
 }
 
 #endif

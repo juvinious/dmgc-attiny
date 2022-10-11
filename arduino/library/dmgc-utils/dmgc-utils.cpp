@@ -122,7 +122,13 @@ void ButtonHandler::poll(int pull)
     }
 }
 
-void DMGC_UTILS::dmgc_intro(Adafruit_NeoPixel & pixels, volatile uint8_t * red, volatile uint8_t * green, volatile uint8_t * blue) {
+void DMGC_UTILS::dmgc_intro(Adafruit_NeoPixel & pixels, bool skipDelays) {
+    
+    // default colors:                     red  org  ylw  grn  cyan blue purp wht  off
+    const uint8_t COLOR_QTY = 9;
+    volatile uint8_t red[COLOR_QTY]   =  { 255, 255, 255, 0,   0,   0,   255, 255, 0};
+    volatile uint8_t green[COLOR_QTY] =  { 0,   100, 200, 255, 255, 0,   0,   255, 0};
+    volatile uint8_t blue[COLOR_QTY]  =  { 0,   0,   0,   0,   255, 255, 255, 255, 0};
 
     // Define order of LEDs in string, starting with 0
     const uint8_t l = 1;
@@ -136,7 +142,8 @@ void DMGC_UTILS::dmgc_intro(Adafruit_NeoPixel & pixels, volatile uint8_t * red, 
 
     pixels.clear();
     pixels.show();
-    delay(1100);
+    if (!skipDelays)
+        delay(1100);
 
     int y=6;
     int k=0;
@@ -176,5 +183,7 @@ void DMGC_UTILS::dmgc_intro(Adafruit_NeoPixel & pixels, volatile uint8_t * red, 
             delay(y);
         }
     }
-    delay(2000);
+
+    if (!skipDelays)
+        delay(2000);
 }
