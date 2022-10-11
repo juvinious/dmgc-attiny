@@ -3,6 +3,9 @@
 
 #ifdef DMGC_SDL_ARDUINO_BUILD
 #include "dmgc-utils.h"
+  // Forward declarations
+  void shiftColors();
+  void outputLED();
 #else
 #include "src/dmgc-utils/dmgc-utils.h"
 #endif
@@ -25,13 +28,12 @@ Adafruit_NeoPixel pixels(NUMPIXELS, OUT, NEO_GRB + NEO_KHZ800);
 volatile uint8_t brightness;
 volatile uint8_t color_type;
 const uint8_t    COLOR_QTY  = 9;
-const uint8_t    DEBOUNCE_DELAY = 150;
+const uint8_t    DEBOUNCE_DELAY = 170;
 const uint8_t    BRIGHTNESS_INC = 5;
 const uint8_t    MIN_BRIGHTNESS = 5;
 const uint8_t    MAX_BRIGHTNESS = 50;
 
-volatile uint8_t brightness_change_flag = 0;
-
+volatile bool brightness_change_flag = false;
 volatile uint8_t red = 128, green = 128, blue = 128;
 
 void setup() {
@@ -43,17 +45,6 @@ void setup() {
   SELECT = buttons.add(PCINT0);
 
   pixels.begin();
-
-  EEPROM.get(0, brightness);
-  EEPROM.get(1, color_type);
-
-  // Check if EPROM data was corrupted, set brightness to max or min values
-  /*if (brightness>MAX_BRIGHTNESS){
-    brightness=MAX_BRIGHTNESS;
-  }
-  if (brightness<MIN_BRIGHTNESS){
-    brightness=MIN_BRIGHTNESS;
-  }*/
 
   // Start brightness in the middle
   brightness = MAX_BRIGHTNESS / 2;
@@ -82,9 +73,6 @@ void setup() {
 #endif
     };
   }
-//  while(!digitalRead(pushbtn)){
-//    delay(10);
-//  }
 }
 void loop() {
   outputLED();
@@ -92,19 +80,20 @@ void loop() {
   // Poll the buttons
   buttons.poll(HIGH);
 
-  if (brightness_change_flag == 0){
+  if (!brightness_change_flag){
     if (brightness > MIN_BRIGHTNESS){
       brightness -= BRIGHTNESS_INC;
     }
     if (brightness <= MIN_BRIGHTNESS){
-      brightness_change_flag = 1;
+      brightness_change_flag = !brightness_change_flag;
+      shiftColors();
     }
   } else if (brightness_change_flag){
     if (brightness < MAX_BRIGHTNESS){
       brightness += BRIGHTNESS_INC;
     }
     if (brightness >= MAX_BRIGHTNESS){
-      brightness_change_flag = 0;
+      brightness_change_flag = !brightness_change_flag;
     }
   }
   delay(DEBOUNCE_DELAY);
@@ -112,10 +101,18 @@ void loop() {
 
 void outputLED(){
   pixels.setBrightness(brightness);
-  pixels.show();
   for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
     //pixels.setPixelColor(i, pixels.Color(red[x],green[x],blue[x]));
     pixels.setPixelColor(i, red, green, blue);
-    pixels.show();   // Send the updated pixel colors to the hardware.
   }  
+  pixels.show();   // Send the updated pixel colors to the hardware.
+}
+
+void shiftColors()
+{
+  red = random(25, 255);
+  green = random(25, 255);
+  blue = random(25, 255);
+  // outputLED();
+  // printf("Red: %d, Green: %d, Blue: %d\n", red, green, blue);
 }

@@ -922,7 +922,6 @@
 #define FUNCTION_3        0x38
 #define FUNCTION_4        0x48
 
-
 void init(void);
 void initVariant(void);
 
@@ -937,13 +936,18 @@ void analogWriteFreq(uint32_t freq);
 void analogWriteResolution(int res);
 void analogWriteRange(uint32_t range);
 
+long random(long);
+long random(long, long);
+void randomSeed(unsigned long);
+long secureRandom(long);
+long secureRandom(long, long);
+
 unsigned long pulseIn(uint8_t pin, uint8_t state, unsigned long timeout);
 unsigned long pulseInLong(uint8_t pin, uint8_t state, unsigned long timeout);
 
 void shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint8_t val);
 uint8_t shiftIn(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder);
 
-void outputLED();
 void outputLED(uint8_t x);
 
 void delay(uint32_t length);

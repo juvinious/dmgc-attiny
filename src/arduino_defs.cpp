@@ -1,6 +1,8 @@
 #include "arduino_defs.h"
 #include "configuration.h"
 
+#include <stdlib.h>
+
 void init(void){
 
 }
@@ -56,6 +58,28 @@ void analogWriteResolution(int res){
 
 void analogWriteRange(uint32_t range){
 
+}
+
+void randomSeed(unsigned long seed) {
+    if(seed != 0) {
+        srand(seed);
+    }
+}
+
+long random(long howbig) {
+    if(howbig == 0) {
+        return 0;
+    }
+    uint32_t val = rand();
+    return val % howbig;
+}
+
+long random(long howsmall, long howbig) {
+    if(howsmall >= howbig) {
+        return howsmall;
+    }
+    long diff = howbig - howsmall;
+    return random(diff) + howsmall;
 }
 
 unsigned long pulseIn(uint8_t pin, uint8_t state, unsigned long timeout){
