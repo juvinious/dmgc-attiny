@@ -11,22 +11,11 @@
 #define OUT           PCINT4 // PB4
 
 /* Button mapper and poller */
-ButtonHandler buttons(4);
-Button * NAVIGATION = NULL, 
+DMGC_UTILS::ButtonHandler buttons;
+DMGC_UTILS::Button * NAVIGATION = NULL, 
        * LEFT = NULL,
        * RIGHT = NULL,
        * SELECT = NULL;
-// const uint8_t TOTAL_BUTTONS;
-
-// Define order of LEDs in string, starting with 0
-#define l             1
-#define u             0
-#define d             2
-#define r             3
-#define se            4
-#define st            5
-#define b             6
-#define a             7
 
 #define NUMPIXELS 8 // Popular NeoPixel ring size
 
@@ -50,6 +39,7 @@ volatile uint8_t blue[COLOR_QTY]  =  { 0,   0,   0,   0,   255, 255, 255, 255, 0
 void setup() {
 
   // Add buttons
+  // Inputs *MUST NOT* use ATTINY's pull-ups. These will rely on the GBC CPU's internal pull-ups to 3.3V. The ATTINY is powered by 5V!!
   NAVIGATION = buttons.add(PCINT3);
   LEFT = buttons.add(PCINT2);
   RIGHT = buttons.add(PCINT1);
@@ -70,63 +60,14 @@ void setup() {
   
   pixels.setBrightness(brightness);
 
-  // Inputs *MUST NOT* use ATTINY's pull-ups. These will rely on the GBC CPU's internal pull-ups to 3.3V. The ATTINY is powered by 5V!!
-  /*
-  pinMode(pushbtn, INPUT);
-  pinMode(leftbtn, INPUT);
-  pinMode(rightbtn, INPUT);
-  pinMode(selbtn, INPUT);
-  */
-
+  // Poll buttons
   buttons.poll(HIGH);
 
   // Skip intro if nav switch is pushed in
   //if (digitalRead(pushbtn)==HIGH){
-  if (NAVIGATION->getState() == Button::UP)
+  if (NAVIGATION->getState() == DMGC_UTILS::Button::UP)
   {
-
-      pixels.clear();
-      pixels.show();
-      delay(1100);
-
-      int y=6;
-      int k=0;
-
-      uint8_t introarray[24] = {8,8,8,8,8,8,8,2,2,0,0,6,6,3,3,5,5,5,5,5,5,5,5,5};
-
-      // Loop through values in introarray. Delays were timed experimentally.
-      for(int j=0; j<16; j++){
-        for(int i=0; i<NUMPIXELS; i++){
-          if(i==l){
-            k=introarray[j+6];
-          }
-          if(i==u){
-            k=introarray[j+5];
-          }
-          if(i==d){
-            k=introarray[j+5];
-          }
-          if(i==r){
-            k=introarray[j+4];
-          }
-          if(i==se){
-            k=introarray[j+3];
-          }
-          if(i==st){
-            k=introarray[j+2];
-          }
-          if(i==b){
-            k=introarray[j+1];
-          }
-          if(i==a){
-            k=introarray[j];
-          }
-        pixels.setPixelColor(i, pixels.Color(red[k],green[k],blue[k]));
-        pixels.show();
-        delay(y);
-        }
-      }
-      delay(2000);
+    DMGC_UTILS::dmgc_intro(pixels, red, green, blue);
   }else{
     while(1){
 #if DMGC_SDL_ARDUINO_BUILD
@@ -185,7 +126,6 @@ void loop() {
     EEPROM.put(1,color_type);
   }
   delay(DEBOUNCE_DELAY);
-
 }
 
 void outputLED(uint8_t x){

@@ -1,10 +1,13 @@
 #include "dmgc-utils.h"
+#include <Adafruit_NeoPixel.h>
 
 #ifdef DMGC_SDL_ARDUINO_BUILD
 #include "arduino_defs.h"
 #else
 #include "Arduino.h"
 #endif
+
+using namespace DMGC_UTILS;
 
 
 Button::Button(int pin):
@@ -65,8 +68,8 @@ void Button::poll(int pull)
     }
 }
 
-ButtonHandler::ButtonHandler(int total):
-totalPins(total),
+ButtonHandler::ButtonHandler():
+totalPins(0),
 buttonList(NULL)
 {
     
@@ -103,6 +106,8 @@ Button * ButtonHandler::add(int pin)
         }
     }
 
+    totalPins++;
+
     return newButton;
 }
 
@@ -115,4 +120,61 @@ void ButtonHandler::poll(int pull)
         current->poll(pull);
         current = next;
     }
+}
+
+void DMGC_UTILS::dmgc_intro(Adafruit_NeoPixel & pixels, volatile uint8_t * red, volatile uint8_t * green, volatile uint8_t * blue) {
+
+    // Define order of LEDs in string, starting with 0
+    const uint8_t l = 1;
+    const uint8_t u = 0;
+    const uint8_t d = 2;
+    const uint8_t r = 3;
+    const uint8_t se = 4;
+    const uint8_t st = 5;
+    const uint8_t b = 6;
+    const uint8_t a = 7;
+
+    pixels.clear();
+    pixels.show();
+    delay(1100);
+
+    int y=6;
+    int k=0;
+
+    uint8_t introarray[24] = {8,8,8,8,8,8,8,2,2,0,0,6,6,3,3,5,5,5,5,5,5,5,5,5};
+
+    // Loop through values in introarray. Delays were timed experimentally.
+    for(int j=0; j<16; j++){
+        for(int i=0; i<pixels.numPixels(); i++)
+        {
+            if(i==l){
+                k=introarray[j+6];
+            }
+            if(i==u){
+                k=introarray[j+5];
+            }
+            if(i==d){
+                k=introarray[j+5];
+            }
+            if(i==r){
+                k=introarray[j+4];
+            }
+            if(i==se){
+                k=introarray[j+3];
+            }
+            if(i==st){
+                k=introarray[j+2];
+            }
+            if(i==b){
+                k=introarray[j+1];
+            }
+            if(i==a){
+                k=introarray[j];
+            }
+            pixels.setPixelColor(i, pixels.Color(red[k],green[k],blue[k]));
+            pixels.show();
+            delay(y);
+        }
+    }
+    delay(2000);
 }

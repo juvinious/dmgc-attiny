@@ -2,4 +2,5 @@
 .vscode
 main
 bin
+obj
 arduino/ino/*/src

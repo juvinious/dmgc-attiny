@@ -1,67 +1,66 @@
 #ifndef _DMGC_UTILS_H
 #define _DMGC_UTILS_H
 
-/*
-enum BUTTON_TYPE
-{
-NAVIGATION,
-SELECT,
-LEFT,
-RIGHT
-};
-*/
+#include <stdint.h>
 
-class Button 
-{
-public:
-    enum STATE
+class Adafruit_NeoPixel;
+
+namespace DMGC_UTILS
+{    
+    class Button 
     {
-        UP,
-        DOWN,
-        HOLD,
-        PRESS,
-        RELEASE
+    public:
+        enum STATE
+        {
+            UP,
+            DOWN,
+            HOLD,
+            PRESS,
+            RELEASE
+        };
+        
+        Button(int pin);
+        ~Button();
+
+        enum STATE getState() const {
+            return state;
+        }
+
+        bool isDown() const {
+            return state == DOWN || state == HOLD;
+        }
+
+        bool isClicked() const {
+            return state == PRESS || state == RELEASE;
+        }
+
+        void poll(int pull);
+
+    private: 
+        int pin;
+        enum STATE state;
+
+        // linked list
+        Button * next;
+        friend class ButtonHandler;
     };
-    
-    Button(int pin);
-    ~Button();
 
-    enum STATE getState() const {
-        return state;
-    }
+    class ButtonHandler
+    {
+    public:
+        ButtonHandler();
+        ~ButtonHandler();
 
-    bool isDown() const {
-        return state == DOWN || state == HOLD;
-    }
+        Button * add(int pin);
 
-    bool isClicked() const {
-        return state == PRESS || state == RELEASE;
-    }
+        void poll(int pull);
 
-    void poll(int pull);
+    private:
+        int totalPins;
+        Button * buttonList;
+    };
 
-private: 
-    int pin;
-    enum STATE state;
-
-    // linked list
-    Button * next;
-    friend class ButtonHandler;
-};
-
-class ButtonHandler
-{
-public:
-    ButtonHandler(int total);
-    ~ButtonHandler();
-
-    Button * add(int pin);
-
-    void poll(int pull);
-
-private:
-    int totalPins;
-    Button * buttonList;
-};
+    void dmgc_intro(Adafruit_NeoPixel &, volatile uint8_t * red, volatile uint8_t * green, volatile uint8_t * blue);
+}
 
 #endif
