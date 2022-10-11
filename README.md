@@ -18,6 +18,8 @@ A software implementation of the attiny85 code that [BucketM0use](https://github
 Have fun!
 
 # TODO
-- Cleanup/Optimize content
-- Handle EEPROM functionality
+- Cleanup/Optimize configuration content
+- EEPROM
+  - Fix get/put templating
+  - Implement other functionality
 

@@ -1,4 +1,5 @@
 *.swp
+.vscode
 main
 bin
 arduino/ino/*/src

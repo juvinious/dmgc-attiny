@@ -149,6 +149,7 @@ struct Led
 class Configuration 
 {
 private:
+    std::string applicationName;
 	YAML::Node yaml;
 	std::string title;
 	int windowX;
@@ -185,7 +186,11 @@ public:
     static Configuration * Get();
     static void Destroy();
 
-	bool setup();
+	bool setup(const std::string &);
+
+    // Default file for loading and saving is executable name + .yaml
+    YAML::Node loadData();
+    bool writeData(YAML::Node data);
 
     void handleKeys(bool &running);
 
@@ -195,7 +200,7 @@ public:
 
     int checkKeyByPin(int pin);
 
-    void renderText(std::string, int x, int y, int w, int h);
+    void renderText(const std::string &, int x, int y, int w, int h);
 
     void renderBackground();
 

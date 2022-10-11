@@ -1,11 +1,10 @@
-ENV_VARS := DMGC_SDL_ARDUINO_BUILD=1
-#DMGC_SDL_ARDUINO_BUILD := 1
 ARDUINO_DIR := arduino
-CFLAGS := -I ./ -I ./src -I ./arduino/library/dmgc-utils -Wall -Werror -std=c++14 -pedantic -ggdb -g -O0
-#CFLAGS := -I ./ -I ./src -I ./arduino/library/dmgc-utils -Wall -Werror -std=c++14 -pedantic
-#CFLAGS := -I ./ -I ./src -I ./arduino/library/dmgc-utils -Wall -Werror -pedantic -ggdb -lSDL2
+ENV_VARS := -DDMGC_SDL_ARDUINO_BUILD
+CFLAGS := $(ENV_VARS) -I ./ -I ./src -I ./arduino/library/dmgc-utils -Wall -Werror -std=c++14 -pedantic -ggdb -g -O0
+#CFLAGS := $(ENV_VARS) -I ./ -I ./src -I ./arduino/library/dmgc-utils -Wall -Werror -std=c++14 -pedantic
+#CFLAGS := $(ENV_VARS) -I ./ -I ./src -I ./arduino/library/dmgc-utils -Wall -Werror -pedantic -ggdb -lSDL2
 LDFLAGS := -lSDL2 -lSDL2_ttf -lSDL2_image -lyaml-cpp
-CC := $(ENV_VARS) g++
+CC := g++
 INO_FLAG := -x c++
 
 DMGC_IPS_ATTINY85 := dmgc-ips-attiny85

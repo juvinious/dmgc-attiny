@@ -19,28 +19,25 @@ public:
   uint8_t * getDataPtr();
   uint8_t const * getConstDataPtr() const;
 
+  /*
   template<typename T> 
-  //T &get(int const address, T &t) volatile {
-  void get(int const address, T &t) volatile {
-    /*if (address < 0 || address + sizeof(T) > _size)
-      //return t;
-
-    memcpy((uint8_t*) &t, _data + address, sizeof(T));
-    //return t; */
-  }
-
+  T &get(int const address, T &t) volatile;
+  */
   template<typename T> 
-  //const T &put(int const address, const T &t) volatile {
-  void put(int const address, const T &t) volatile {
-    /*if (address < 0 || address + sizeof(T) > _size)
-      //return t;
-    if (memcmp(_data + address, (const uint8_t*)&t, sizeof(T)) != 0) {
-      _dirty = true;
-      memcpy(_data + address, (const uint8_t*)&t, sizeof(T));
-    }
-    */
-    //return t;
-  }
+  void get(int const address, T &t) volatile;
+
+  // Explicitly handle volatile unsigned char
+  void get(int const address, volatile unsigned char &) volatile;
+
+  /*
+  template<typename T> 
+  const T &put(int const address, const T &t) volatile;
+  */
+  template<typename T> 
+  void put(int const address, const T &t) volatile;
+
+  // Explicitly handle volatile unsigned char
+  void put(int const address, volatile unsigned char &) volatile;
 
   size_t length() {return _size;}
 

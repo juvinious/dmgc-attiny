@@ -10,7 +10,7 @@ int main(int argc,char* argv[])
 {
 	Configuration * config = Configuration::Get();
 
-	if (!config->setup()) {
+	if (!config->setup(argv[0])) {
 		return 0;
 	}
 

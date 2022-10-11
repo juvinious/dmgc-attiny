@@ -1,7 +1,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <EEPROM.h>
 
-#if DMGC_SDL_ARDUINO_BUILD
+#ifdef DMGC_SDL_ARDUINO_BUILD
 #include "dmgc-utils.h"
 #else
 #include "src/dmgc-utils/dmgc-utils.h"
@@ -130,15 +130,15 @@ void setup() {
   }else{
     while(1){
 #if DMGC_SDL_ARDUINO_BUILD
+    // So we can get out of this mess if pressed
     buttons.poll(HIGH);
-    delay();
+    if (NAVIGATION->isClicked()) exit(0);
+    delay(DEBOUNCE_DELAY);
 #endif
     };
   }
-//  while(!digitalRead(pushbtn)){
-//    delay(10);
-//  }
 }
+
 void loop() {
   outputLED(color_type);
 
@@ -147,9 +147,7 @@ void loop() {
 
   // Down or hold
   if (NAVIGATION->isDown()){
-    // std::cout << "Got down " << std::endl;
     if (LEFT->isDown()) {
-      // std::cout << "Got LEFT " << std::endl;
       brightness_change_flag = 1;
       if(brightness-BRIGHTNESS_INC<MIN_BRIGHTNESS){
         brightness=MIN_BRIGHTNESS;
@@ -160,7 +158,6 @@ void loop() {
       outputLED(color_type);
     }
     if (RIGHT->isDown()) {
-      // std::cout << "Got RIGHT " << std::endl;
       brightness_change_flag = 1;
       if(brightness+BRIGHTNESS_INC>MAX_BRIGHTNESS){
         brightness=MAX_BRIGHTNESS;
@@ -175,17 +172,18 @@ void loop() {
   if (NAVIGATION->isClicked()){
     if (brightness_change_flag != 1)
     {
-      // std::cout << "Press and release... " << std::endl;
       color_type += 1;
       if (color_type >= COLOR_QTY-1){
         color_type = 0;
       }
       outputLED(color_type);
     }
-    
     brightness_change_flag = 0;
-  }
 
+    // Save brightness and color setting to EPROM
+    EEPROM.put(0,brightness);
+    EEPROM.put(1,color_type);
+  }
   delay(DEBOUNCE_DELAY);
 
 }

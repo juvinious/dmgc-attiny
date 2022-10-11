@@ -1,5 +1,7 @@
 #include "configuration.h"
 
+#include <fstream>
+#include <iostream>
 #include <algorithm>
 #include <iostream>
 #include <algorithm>
@@ -259,7 +261,8 @@ Configuration::~Configuration()
     SDL_Quit();
 }
 
-bool Configuration::setup(){
+bool Configuration::setup(const std::string & applicationName){
+    this->applicationName = applicationName;
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         printf("error initializing sdl. %s\n", SDL_GetError());
@@ -294,6 +297,27 @@ bool Configuration::setup(){
         return false;
     }
 
+    return true;
+}
+
+YAML::Node Configuration::loadData()
+{
+    const std::string yaml = applicationName + ".yaml";
+    std::ifstream file(yaml);
+    if (!file.is_open())
+    {
+        return YAML::Node();
+    }
+    file.close();
+    
+    return YAML::LoadFile(yaml);
+}
+
+bool Configuration::writeData(YAML::Node data)
+{
+    const std::string yaml = applicationName + ".yaml";
+    std::ofstream fout(yaml);
+    fout << data;
     return true;
 }
 
@@ -337,7 +361,7 @@ int Configuration::checkKeyByPin(int pin){
     return false;
 }
 
-void Configuration::renderText(std::string message, int x, int y, int w, int h)
+void Configuration::renderText(const std::string & message, int x, int y, int w, int h)
 {
     SDL_Rect rect = { x,y,w,h };
     messages.renderText(message, renderer, rect);
