@@ -1,7 +1,9 @@
 #include "dmgc-utils.h"
 
-#ifndef DMGC_SDL_ARDUINO_BUILD
+#ifdef DMGC_SDL_ARDUINO_BUILD
 #include "arduino_defs.h"
+#else
+#include "Arduino.h"
 #endif
 
 

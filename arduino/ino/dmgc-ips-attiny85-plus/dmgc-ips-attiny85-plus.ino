@@ -1,8 +1,11 @@
 #include <Adafruit_NeoPixel.h>
 #include <EEPROM.h>
 
+#if DMGC_SDL_ARDUINO_BUILD
 #include "dmgc-utils.h"
-
+#else
+#include "src/dmgc-utils/dmgc-utils.h"
+#endif
 
 // Which pin on the Arduino is connected to the NeoPixels?
 #define OUT           PCINT4 // PB4
@@ -125,7 +128,12 @@ void setup() {
       }
       delay(2000);
   }else{
-    while(1){};
+    while(1){
+#if DMGC_SDL_ARDUINO_BUILD
+    buttons.poll(HIGH);
+    delay();
+#endif
+    };
   }
 //  while(!digitalRead(pushbtn)){
 //    delay(10);
