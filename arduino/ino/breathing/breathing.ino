@@ -61,6 +61,11 @@ void loop() {
   // Poll the buttons
   buttons.poll(HIGH);
 
+  if (NAVIGATION->isClicked())
+  {
+    magic.nextMode();
+  }
+
   // Update current mode
   magic.update();
 
