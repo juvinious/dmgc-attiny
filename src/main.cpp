@@ -8,6 +8,9 @@
 
 int main(int argc,char* argv[])
 {
+	// Random seed
+	srand(time(0));
+
 	Configuration * config = Configuration::Get();
 
 	if (!config->setup(argv[0])) {

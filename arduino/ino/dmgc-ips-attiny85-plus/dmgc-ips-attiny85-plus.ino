@@ -13,9 +13,9 @@
 /* Button mapper and poller */
 DMGC_UTILS::ButtonHandler buttons;
 DMGC_UTILS::Button * NAVIGATION = NULL, 
-       * LEFT = NULL,
-       * RIGHT = NULL,
-       * SELECT = NULL;
+                   * LEFT = NULL,
+                   * RIGHT = NULL,
+                   * SELECT = NULL;
 
 #define NUMPIXELS 8 // Popular NeoPixel ring size
 
@@ -92,7 +92,7 @@ void loop() {
 
   // Down or hold
   if (NAVIGATION->isDown()){
-    if (LEFT->isDown()) {
+    if (LEFT->isClicked()) {
       brightness_change_flag = 1;
       if(brightness-BRIGHTNESS_INC<MIN_BRIGHTNESS){
         brightness=MIN_BRIGHTNESS;
@@ -102,7 +102,7 @@ void loop() {
       pixels.setBrightness(brightness);
       outputLED(color_type);
     }
-    if (RIGHT->isDown()) {
+    if (RIGHT->isClicked()) {
       brightness_change_flag = 1;
       if(brightness+BRIGHTNESS_INC>MAX_BRIGHTNESS){
         brightness=MAX_BRIGHTNESS;
@@ -117,10 +117,7 @@ void loop() {
   if (NAVIGATION->isClicked()){
     if (brightness_change_flag != 1)
     {
-      color_type += 1;
-      if (color_type >= COLOR_QTY-1){
-        color_type = 0;
-      }
+      color_type = ((color_type + 1) % COLOR_QTY);
       outputLED(color_type);
     }
     brightness_change_flag = 0;
