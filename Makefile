@@ -10,23 +10,49 @@ LDFLAGS := -lSDL2 -lSDL2_ttf -lSDL2_image -lyaml-cpp
 CC := g++
 INO_FLAG := -x c++
 
+BASE_SOURCE := src/arduino_defs.cpp src/EEPROM.cpp src/Adafruit_NeoPixel.cpp arduino/library/dmgc-utils/dmgc-utils.cpp src/configuration.cpp src/main.cpp
+OBJ_FILES := $(BASE_SOURCE:%=$(OBJ_DIR)/%.o)
+
+#################### BIN NAMES #########################
 DMGC_IPS_ATTINY85 := dmgc-ips-attiny85
 DMGC_IPS_ATTINY85_PLUS := dmgc-ips-attiny85-plus
 BREATHING := breathing
-BIN_FILES := $(BIN_DIR)/$(DMGC_IPS_ATTINY85) $(BIN_DIR)/$(DMGC_IPS_ATTINY85_PLUS) $(BIN_DIR)/$(BREATHING)
-INO_FILES := $(ARDUINO_DIR)/ino/$(BREATHING)/$(BREATHING).ino $(ARDUINO_DIR)/ino/$(DMGC_IPS_ATTINY85)/$(DMGC_IPS_ATTINY85).ino $(ARDUINO_DIR)/ino/$(DMGC_IPS_ATTINY85_PLUS)/$(DMGC_IPS_ATTINY85_PLUS).ino 
+########################################################
 
-BASE_SOURCE := src/arduino_defs.cpp src/EEPROM.cpp src/Adafruit_NeoPixel.cpp arduino/library/dmgc-utils/dmgc-utils.cpp src/configuration.cpp src/main.cpp
-OBJ_FILES := $(BASE_SOURCE:%=$(OBJ_DIR)/%.o)
-INO_OBJ_FILES := $(INO_FILES:%=$(OBJ_DIR)/%.o)
+################# BIN SOURCES ##########################
+BREATHING_BIN := $(BIN_DIR)/$(BREATHING)
+BREATHING_SOURCE := $(ARDUINO_DIR)/ino/$(BREATHING)/pixel-magic.cpp $(ARDUINO_DIR)/ino/$(BREATHING)/$(BREATHING).ino
+BREATHING_OBJ_FILES := $(BREATHING_SOURCE:%=$(OBJ_DIR)/%.o)
 
-DEPS := $(OBJ_FILES:.o=.d) $(INO_OBJ_FILES:.o=.d)
+DMGC_IPS_ATTINY85_PLUS_BIN := $(BIN_DIR)/$(DMGC_IPS_ATTINY85_PLUS)
+DMGC_IPS_ATTINY85_PLUS_SOURCE := $(ARDUINO_DIR)/ino/$(DMGC_IPS_ATTINY85_PLUS)/$(DMGC_IPS_ATTINY85_PLUS).ino
+DMGC_IPS_ATTINY85_PLUS_OBJ_FILES := $(DMGC_IPS_ATTINY85_PLUS_SOURCE:%=$(OBJ_DIR)/%.o)
 
-all: $(OBJ_DIR) $(OBJ_FILES) $(INO_OBJ_FILES) $(BIN_DIR) $(BIN_FILES)
+DMGC_IPS_ATTINY85_BIN := $(BIN_DIR)/$(DMGC_IPS_ATTINY85)
+DMGC_IPS_ATTINY85_SOURCE := $(ARDUINO_DIR)/ino/$(DMGC_IPS_ATTINY85)/$(DMGC_IPS_ATTINY85).ino
+DMGC_IPS_ATTINY85_OBJ_FILES := $(DMGC_IPS_ATTINY85_SOURCE:%=$(OBJ_DIR)/%.o)
+########################################################
 
+##################### DEPENDENCIES #####################
+DEPS := $(OBJ_FILES:.o=.d) $(BREATHING_OBJ_FILES:.o=.d) $(DMGC_IPS_ATTINY85_OBJ_FILES:.o=.d) $(DMGC_IPS_ATTINY85_PLUS_OBJ_FILES:.o=.d)
+########################################################
+
+################# ALL TARGETS ##########################
+all: $(OBJ_DIR) $(OBJ_FILES) $(INO_OBJ_FILES) $(BIN_DIR) $(BREATHING_BIN) $(DMGC_IPS_ATTINY85_BIN) $(DMGC_IPS_ATTINY85_PLUS_BIN)
 .PHONY: all
+########################################################
 
-# Have to greedily build all the executables again... Have to figure out to single them out without explicitly listing them...
+##################### BINS #############################
+$(DMGC_IPS_ATTINY85_PLUS_BIN): $(OBJ_FILES) $(DMGC_IPS_ATTINY85_PLUS_OBJ_FILES)
+	$(CC) $(DMGC_IPS_ATTINY85_PLUS_OBJ_FILES) $(OBJ_FILES) -o $@ $(LDFLAGS)
+
+$(DMGC_IPS_ATTINY85_BIN): $(OBJ_FILES) $(DMGC_IPS_ATTINY85_OBJ_FILES)
+	$(CC) $(DMGC_IPS_ATTINY85_OBJ_FILES) $(OBJ_FILES) -o $@ $(LDFLAGS)
+	
+$(BREATHING_BIN): $(OBJ_FILES) $(BREATHING_OBJ_FILES)
+	$(CC) $(BREATHING_OBJ_FILES) $(OBJ_FILES) -o $@ $(LDFLAGS)
+########################################################
+
 $(BIN_FILES): $(OBJ_FILES) $(INO_OBJ_FILES)
 	$(CC) $(OBJ_DIR)/arduino/ino/$(@F)/$(@F).ino.o $(OBJ_FILES) -o $@ $(LDFLAGS)
 
