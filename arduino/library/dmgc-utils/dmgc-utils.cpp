@@ -12,7 +12,8 @@ using namespace DMGC_UTILS;
 
 Button::Button(int pin):
 pin(pin),
-state(UP)
+state(UP),
+next(NULL)
 {
     pinMode(pin, INPUT);
 }
