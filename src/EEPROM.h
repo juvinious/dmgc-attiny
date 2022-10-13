@@ -34,7 +34,7 @@ public:
   const T &put(int const address, const T &t) volatile;
   */
   template<typename T> 
-  void put(int const address, const T &t) volatile;
+  void put(int const address, T &t) volatile;
 
   // Explicitly handle volatile unsigned char
   void put(int const address, volatile unsigned char &) volatile;

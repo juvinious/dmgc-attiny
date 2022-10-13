@@ -57,8 +57,10 @@ void PixelMagic::update()
             updateOutToCenter();
             break;
         case MODE::BREATHING:
-        default:
             updateBreathing();
+            break;
+        case MODE::OFF:
+        default:
             break;
     }
 }
@@ -95,9 +97,35 @@ void PixelMagic::nextMode()
             initOutToCenter();
             break;
         case MODE::BREATHING:
-        default:
             initBreathing();
             break;
+        case MODE::OFF:
+        default:
+            resetColors(MIN_BRIGHTNESS, false);
+            break;
+    }
+}
+
+void PixelMagic::resetColors(uint8_t brightness, bool randomTarget)
+{
+    // Brightness at the bottom Increments in 5 to 50
+    this->previousBrightness = this->brightness = brightness;
+    if (randomTarget)
+    {
+        // Color to move to
+        targetColor.r = randomColor(0);
+        targetColor.g = randomColor(0);
+        targetColor.b = randomColor(0);
+        // All colors reached target?
+        targetColor.flag = false;
+    } else {
+        targetColor.reset();
+    }
+
+    for (int i = 0; i < NUMPIXELS; i++){
+        // All pixels off and reset flag
+        colors[i].reset();
+        pixels.setPixelColor(i, colors[i].r, colors[i].g, colors[i].b);
     }
 }
 
@@ -112,77 +140,26 @@ void PixelMagic::initBreathing()
 void PixelMagic::initLeftToRight()
 {
     // Brightness at the bottom Increments in 5 to 50
-    previousBrightness = brightness = 10;
-    // Color to move to
-    targetColor.r = randomColor();
-    targetColor.g = randomColor();
-    targetColor.b = randomColor();
-    // All colors reached target?
-    targetColor.flag = false;
-
-    for (int i = 0; i < NUMPIXELS; i++){
-        // All pixels off
-        colors[i].r = colors[i].g = colors[i].b = 0;
-        // Target reached?
-        colors[i].flag = false;
-    }
+    resetColors(10, true);
 }
 
 void PixelMagic::initRightToLeft()
 {
     // Brightness at the bottom Increments in 5 to 50
-    previousBrightness = brightness = 10;
-    // Color to move to
-    targetColor.r = randomColor();
-    targetColor.g = randomColor();
-    targetColor.b = randomColor();
-    // All colors reached target?
-    targetColor.flag = false;
-
-    for (int i = 0; i < NUMPIXELS; i++){
-        // All pixels off
-        colors[i].r = colors[i].g = colors[i].b = 0;
-        // Target reached?
-        colors[i].flag = false;
-    }
+    resetColors(10, true);
 }
 
 void PixelMagic::initCenterOut()
 {
     // Brightness at the bottom Increments in 5 to 50
     previousBrightness = brightness = 10;
-    // Color to move to
-    targetColor.r = randomColor(0);
-    targetColor.g = randomColor(0);
-    targetColor.b = randomColor(0);
-    // All colors reached target?
-    targetColor.flag = false;
-
-    for (int i = 0; i < NUMPIXELS; i++){
-        // All pixels off
-        colors[i].r = colors[i].g = colors[i].b = 0;
-        // Target reached?
-        colors[i].flag = false;
-    }
+    resetColors(10, true);
 }
 
 void PixelMagic::initOutToCenter()
 {
     // Brightness at the bottom Increments in 5 to 50
-    previousBrightness = brightness = 10;
-    // Color to move to
-    targetColor.r = randomColor(0);
-    targetColor.g = randomColor(0);
-    targetColor.b = randomColor(0);
-    // All colors reached target?
-    targetColor.flag = false;
-
-    for (int i = 0; i < NUMPIXELS; i++){
-        // All pixels off
-        colors[i].r = colors[i].g = colors[i].b = 0;
-        // Target reached?
-        colors[i].flag = false;
-    }
+    resetColors(10, true);
 }
 
 void PixelMagic::updateBreathing(){

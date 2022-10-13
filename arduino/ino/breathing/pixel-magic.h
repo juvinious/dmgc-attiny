@@ -23,12 +23,13 @@ public:
 
     enum MODE
     {
-        BREATHING,
-        LEFT_TO_RIGHT,
-        RIGHT_TO_LEFT,
-        CENTER_OUT,
-        OUT_TO_CENTER,
-        NUM_MODES
+        BREATHING = 0,
+        LEFT_TO_RIGHT = 1,
+        RIGHT_TO_LEFT = 2,
+        CENTER_OUT = 3,
+        OUT_TO_CENTER = 4,
+        OFF = 5,
+        NUM_MODES = 6
     };
 
     PixelMagic();
@@ -47,7 +48,18 @@ public:
         return this->pixels;
     }
 
+    void setCurrentMode(uint8_t mode)
+    {
+        this->currentMode = static_cast<MODE>(mode);
+    }
+
+    uint8_t getCurrentMode() const volatile
+    {
+        return static_cast<uint8_t>(this->currentMode);
+    }
+
 protected:
+    void resetColors(uint8_t brightness, bool randomTarget);
     void initBreathing();
     void initLeftToRight();
     void initRightToLeft();
@@ -99,6 +111,12 @@ private:
                 g = g <= p.g ? p.g : g + increment;
                 b = b <= p.b ? p.b : b + increment;
             }
+        }
+
+        void reset()
+        {
+            r = g = b = 0;
+            flag = false;
         }
     };
     

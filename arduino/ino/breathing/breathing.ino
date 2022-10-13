@@ -25,6 +25,12 @@ void setup() {
   // Setup initial items
   magic.setup();
 
+  // Get previous saved mode if exists otherwise start at 0
+  volatile uint8_t mode = 0;
+  EEPROM.get(0, mode);
+  if (mode != -1)
+    magic.setCurrentMode(mode);
+
   // Add buttons
   NAVIGATION = buttons.add(PCINT3);
   LEFT = buttons.add(PCINT2);
@@ -55,8 +61,8 @@ void setup() {
   }
 }
 void loop() {
-  // Update display
-  magic.show();
+  // Update current mode
+  magic.update();
 
   // Poll the buttons
   buttons.poll(HIGH);
@@ -64,10 +70,12 @@ void loop() {
   if (NAVIGATION->isClicked())
   {
     magic.nextMode();
+    volatile uint8_t mode = magic.getCurrentMode();
+    EEPROM.put(0, mode);
   }
-
-  // Update current mode
-  magic.update();
+  
+  // Update display
+  magic.show();
 
   delay(DEBOUNCE_DELAY);
 }

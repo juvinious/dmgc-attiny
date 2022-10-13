@@ -76,7 +76,7 @@ const T & EEPROMClass::put(int const address, const T &t) volatile
 */
 
 template<typename T> 
-void EEPROMClass::put(int const address, const T &t) volatile
+void EEPROMClass::put(int const address, T &t) volatile
 {
 	const std::string pos = std::to_string(address);
 	YAML::Node data = Configuration::Get()->loadData();
@@ -94,7 +94,7 @@ void EEPROMClass::put(int const address, volatile unsigned char & value) volatil
 }
 
 // Explicit initilazations
-template void EEPROMClass::get<int>(int const address, int &t) volatile;
-// template void EEPROMClass::put<int>(int const address, int &t) volatile;
+template<> void EEPROMClass::get<int>(int const address, int &t) volatile;
+template<> void EEPROMClass::put<int>(int const address, int &t) volatile;
 
 EEPROMClass EEPROM;
