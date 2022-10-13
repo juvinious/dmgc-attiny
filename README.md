@@ -19,8 +19,8 @@ A more extended example, allowing for different modes ([incomplete, see todo](#t
   - Breathing - Increases and decreases brightness at a specific rate. Changes to random color when brightness is at 5 or below, starting a new cycle
   - Left to Right (LTR) - Run a gradient from left to right while brightning the a random color to the max, fade out and then restart
   - Right to Left - Same as LTR, but going in the opposite direction
-  - Center Out - Same as LTR, but starting from select and start and going outward
-  - Out to Center - Same as LTR, but starting at Left and A
+  - Center Out - Same as LTR, but starting from right and select and going outward
+  - Out to Center - Same as LTR, but starting at up and A
 
 ## Deploy to ATTINY85 in Arduino IDE
 - Symlink library directory as src in the directory of the sketch

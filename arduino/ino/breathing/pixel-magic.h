@@ -12,7 +12,7 @@ public:
     {
         UP = 0,
         LEFT = 1,
-        DONW = 2,
+        DOWN = 2,
         RIGHT = 3,
         SELECT = 4,
         START = 5,
@@ -62,6 +62,7 @@ protected:
 private:    
     struct PixelColor
     {
+        uint8_t index;
         uint8_t r; 
         uint8_t g;
         uint8_t b;
@@ -100,6 +101,7 @@ private:
             }
         }
     };
+    
     static const uint8_t NUMPIXELS = 8;
 
     Adafruit_NeoPixel pixels;
@@ -109,6 +111,10 @@ private:
     volatile uint8_t brightness;
     volatile uint8_t previousBrightness;
     enum MODE currentMode;
+
+    // Helpers
+    bool _update_led(PixelMagic::PixelColor &, PixelMagic::PixelColor &, uint8_t increment);
+    bool _update_two_leds(PixelMagic::PixelColor &, PixelMagic::PixelColor &, PixelMagic::PixelColor &, uint8_t increment);
 };
 
 #endif
