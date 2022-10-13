@@ -32,7 +32,7 @@ A more extended example, allowing for different modes.
   - Center Out - Same as LTR, but starting from right and select and going outward
   - Out to Center - Same as LTR, but starting at up and A
 
-![Breathing Example](https://discord.com/channels/1018559726256140399/1018593944038277140/1029980035559473232 "Breathing Example")
+![Breathing Example](https://imgur.com/uMBCuFk "Breathing Example")
 
 ## Deploy to ATTINY85 in Arduino IDE
 
