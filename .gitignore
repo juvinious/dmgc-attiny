@@ -4,3 +4,6 @@ main
 bin
 obj
 arduino/ino/*/src
+*.gbr
+*.gbrjob
+*.drl
