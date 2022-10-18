@@ -75,11 +75,13 @@ private:
     struct PixelColor
     {
         uint8_t index;
-        uint8_t r; 
-        uint8_t g;
-        uint8_t b;
+        int r; 
+        int g;
+        int b;
         // Multiuse flag (alternating, forward, backward, etc)
         bool flag;
+        // Multiuse flag (for more options)
+        bool flag2;
 
         bool operator<(const PixelColor & p){
             return (r < p.r ||
@@ -101,26 +103,44 @@ private:
                     g > p.g ||
                     b > p.b);
         }
-        void stepTo(const PixelColor & p, uint8_t increment){
-            if (*this > p){
-                r = r >= p.r ? p.r : r - increment;
-                g = g >= p.g ? p.g : g - increment;
-                b = b >= p.b ? p.b : b - increment;
-            } else {
-                r = r <= p.r ? p.r : r + increment;
-                g = g <= p.g ? p.g : g + increment;
-                b = b <= p.b ? p.b : b + increment;
+        
+        void inc(int & i1, const int i2, uint8_t increment){
+            if (i1 > i2){
+                i1 -= increment;
+                if (i1 <= i2){
+                    i1 = i2;
+                }
             }
+            else if (i1 < i2){
+                i1 += increment;
+                if (i1 >= i2){
+                    i1 = i2;
+                }
+            } else {
+                i1 = i2;
+            }
+        }
+        void stepTo(const PixelColor & p, uint8_t increment){
+            inc(r, p.r, increment);
+            inc(g, p.g, increment);
+            inc(b, p.b, increment);
         }
 
         void reset()
         {
             r = g = b = 0;
-            flag = false;
+            flag = flag2 = false;
         }
     };
     
     static const uint8_t NUMPIXELS = 8;
+    
+    // Basic Colors
+    static const PixelColor WHITE;
+    static const PixelColor BLACK;
+    static const PixelColor RED;
+    static const PixelColor GREEN;
+    static const PixelColor BLUE;
 
     Adafruit_NeoPixel pixels;
     PixelColor colors[PixelMagic::NUMPIXELS];
@@ -131,8 +151,8 @@ private:
     enum MODE currentMode;
 
     // Helpers
-    bool _update_led(PixelMagic::PixelColor &, PixelMagic::PixelColor &, uint8_t increment);
-    bool _update_two_leds(PixelMagic::PixelColor &, PixelMagic::PixelColor &, PixelMagic::PixelColor &, uint8_t increment);
+    bool _update_led(const PixelMagic::PixelColor &, PixelMagic::PixelColor &, uint8_t increment);
+    bool _update_two_leds(const PixelMagic::PixelColor &, PixelMagic::PixelColor &, PixelMagic::PixelColor &, uint8_t increment);
 };
 
 #endif

@@ -396,11 +396,11 @@ void Configuration::renderLeds()
             renderText(leds[i]->description, leds[i]->coords.x, leds[i]->coords.y - 30, leds[i]->coords.w, 25);
         }
         // Disable if rgb is 0,0,0
-        if (ledColor.r || ledColor.g || ledColor.b)
-        {
+        //if (ledColor.r || ledColor.g || ledColor.b)
+        //{
             SDL_SetRenderDrawColor(renderer, leds[i]->ledColor.r, leds[i]->ledColor.g, leds[i]->ledColor.b, leds[i]->ledColor.a);
             SDL_RenderFillRect(renderer, &leds[i]->coords);
-        }
+        //}
     }
 }
 
