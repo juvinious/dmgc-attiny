@@ -121,7 +121,8 @@
         0.0,
         0.2,
         0.4,
-        0.6
+        0.6,
+        1.8
       ],
       "via_dimensions": [
         {
@@ -356,7 +357,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "Arduino_Mega.kicad_pro",
+    "filename": "dmgc-attiny-arduino-mega.kicad_pro",
     "version": 1
   },
   "net_settings": {
