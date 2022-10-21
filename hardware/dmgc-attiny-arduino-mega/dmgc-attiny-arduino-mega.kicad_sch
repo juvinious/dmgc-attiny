@@ -7,7 +7,8 @@
   (title_block
     (title "DMGC Arduino Mega 2650 Shield")
     (date "mar. 31 mars 2015")
-    (rev "0.1")
+    (rev "0.2")
+    (company "Author: juvinious")
   )
 
   (lib_symbols
@@ -2305,7 +2306,7 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 66531da8-6d57-4dd3-8cb6-47a6954bda97)
   )
-  (text "* Indicates a PWM-capable pin" (at 177.8 180.34 0)
+  (text "* Indicates a PWM-capable pin" (at 177.8 170.18 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid c364973a-9a67-4667-8185-a3a5c6c6cbdf)
   )
