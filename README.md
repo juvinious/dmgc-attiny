@@ -47,6 +47,7 @@ Have fun!
 
 # TODO
 
+- Update breathing example, speed was broken before due to increments being wrong
 - Cleanup/Optimize configuration content
 - Add additional utils as needed
 - Adafruit_NeoPixel
@@ -54,5 +55,6 @@ Have fun!
 - EEPROM
   - Fix get/put templating
   - Implement other functionality
+- Implement fast_led library functionality (http://fastled.io/)
 - Try to match as close as possible the hardware speed at 8mhz
 
