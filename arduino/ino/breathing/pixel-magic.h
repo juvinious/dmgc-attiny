@@ -4,6 +4,51 @@
 #include <Adafruit_NeoPixel.h>
 #include <EEPROM.h>
 
+class PixelColor
+{
+public:
+    enum STATE
+    {
+        BEGIN,
+        FORWARD,
+        BACKWARD,
+        HALF,
+        MAX,
+        COMPLETE,
+        REACHED_TARGET,
+        WAITING,
+        NOT_IN_USE,
+        NO_CHANGE,
+    };
+
+    PixelColor();
+    PixelColor(uint8_t index, uint8_t r, uint8_t g, uint8_t b, const PixelColor::STATE &);
+    PixelColor(const PixelColor &);
+    ~PixelColor();
+
+    bool operator<(const PixelColor & p);
+    bool operator==(const PixelColor & p);
+    bool operator!=(const PixelColor & p);
+    bool operator>(const PixelColor &p);
+
+    void stepTo(const PixelColor & p, uint8_t increment);
+    void reset();
+
+    void setNextColor(const PixelColor &, const STATE state = NO_CHANGE);
+
+    void update(uint8_t increment);
+
+    uint8_t index;
+    int r; 
+    int g;
+    int b;
+    // Pixel state forgo boolean flags from before
+    enum STATE state;
+
+private:
+    const PixelColor * nextColor;
+};
+
 class PixelMagic
 {
 public:
@@ -72,77 +117,7 @@ protected:
     void updateOutToCenter();
 
 private:
-    enum PIXEL_STATE
-    {
-        BEGIN,
-        FORWARD,
-        BACKWARD,
-        HALF,
-        MAX,
-        COMPLETE,
-        WAITING,
-        NOT_IN_USE,
-    };
 
-    struct PixelColor
-    {
-        uint8_t index;
-        int r; 
-        int g;
-        int b;
-        // Pixel state forgo boolean flags from before
-        enum PIXEL_STATE state;
-
-        bool operator<(const PixelColor & p){
-            return (r < p.r ||
-                    g < p.g ||
-                    b < p.b);
-        }
-        bool operator==(const PixelColor & p){
-            return (r == p.r && 
-                    g == p.g && 
-                    b == p.b);
-        }
-        bool operator!=(const PixelColor & p){
-            return (r != p.r ||
-                    g != p.g ||
-                    b != p.b);
-        }
-        bool operator>(const PixelColor &p){
-            return (r > p.r ||
-                    g > p.g ||
-                    b > p.b);
-        }
-        
-        void inc(int & i1, const int i2, uint8_t increment){
-            if (i1 > i2){
-                i1 -= increment;
-                if (i1 <= i2){
-                    i1 = i2;
-                }
-            }
-            else if (i1 < i2){
-                i1 += increment;
-                if (i1 >= i2){
-                    i1 = i2;
-                }
-            } else {
-                i1 = i2;
-            }
-        }
-        void stepTo(const PixelColor & p, uint8_t increment){
-            inc(r, p.r, increment);
-            inc(g, p.g, increment);
-            inc(b, p.b, increment);
-        }
-
-        void reset()
-        {
-            r = g = b = 0;
-            state = BEGIN;
-        }
-    };
-    
     static const uint8_t NUMPIXELS = 8;
     
     // Basic Colors
@@ -161,9 +136,9 @@ private:
     enum MODE currentMode;
 
     // Helpers
-    bool _update_led(const PixelMagic::PixelColor &, PixelMagic::PixelColor &, uint8_t increment);
-    bool _update_two_leds(const PixelMagic::PixelColor &, PixelMagic::PixelColor &, PixelMagic::PixelColor &, uint8_t increment);
-    void _randomize_colors(PixelMagic::PixelColor &);
+    bool _update_led(const PixelColor &, PixelColor &, uint8_t increment);
+    bool _update_two_leds(const PixelColor &, PixelColor &, PixelColor &, uint8_t increment);
+    void _randomize_colors(PixelColor &);
 };
 
 #endif
