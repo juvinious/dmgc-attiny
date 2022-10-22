@@ -20,16 +20,25 @@ DMGC_UTILS::Button * NAVIGATION = NULL,
 const uint8_t    DEBOUNCE_DELAY = 170;
 PixelMagic magic;
 
+// Settings changed
+bool settingsChanged = false;
+
 void setup() {
 
   // Setup initial items
   magic.setup();
 
   // Get previous saved mode if exists otherwise start at 0
-  volatile uint8_t mode = 0;
+  volatile uint8_t mode = 0, increment = 0;
+
   EEPROM.get(0, mode);
-  if (mode != -1)
+  EEPROM.get(1, increment);
+
+  if (mode >= 0 && mode < PixelMagic::NUM_MODES)
     magic.setCurrentMode(mode);
+  else magic.setCurrentMode(PixelMagic::BREATHING);
+  magic.setIncrementSpeed(increment);
+
 
   // Add buttons
   NAVIGATION = buttons.add(PCINT3);
@@ -60,18 +69,39 @@ void setup() {
     };
   }
 }
-void loop() {
+void loop()
+{
   // Update current mode
   magic.update();
 
   // Poll the buttons
   buttons.poll(HIGH);
 
-  if (NAVIGATION->isClicked())
+  if (NAVIGATION->isDown()){
+     if (LEFT->isClicked()) {
+      magic.decreaseIncrement();
+      settingsChanged = true;
+    }
+    if (RIGHT->isClicked()) {
+      magic.increaseIncrement();
+      settingsChanged = true;
+    }
+  } 
+  if (NAVIGATION->isClicked() && !settingsChanged)
   {
     magic.nextMode();
+    settingsChanged = true;
+  }
+
+  // Update eeprom only when we release the navigation button 
+  // so we don't move to the next mode if changing increment
+  if (settingsChanged && !NAVIGATION->isDown())
+  {
     volatile uint8_t mode = magic.getCurrentMode();
+    volatile uint8_t increment = magic.getIncrementSpeed();
     EEPROM.put(0, mode);
+    EEPROM.put(1, increment);
+    settingsChanged = false;
   }
   
   // Update display

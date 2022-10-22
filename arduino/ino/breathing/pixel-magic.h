@@ -12,14 +12,21 @@ public:
         BEGIN,
         FORWARD,
         BACKWARD,
+        REACHED_TARGET,
+        COMPLETE,
         HALF,
         MAX,
-        COMPLETE,
-        REACHED_TARGET,
         WAITING,
         NOT_IN_USE,
         NO_CHANGE,
     };
+
+    // Basic Colors
+    static const PixelColor WHITE;
+    static const PixelColor BLACK;
+    static const PixelColor RED;
+    static const PixelColor GREEN;
+    static const PixelColor BLUE;
 
     PixelColor();
     PixelColor(uint8_t index, uint8_t r, uint8_t g, uint8_t b, const PixelColor::STATE &);
@@ -33,10 +40,14 @@ public:
 
     void stepTo(const PixelColor & p, uint8_t increment);
     void reset();
+    // Randomize Colors
+    void random();
 
     void setNextColor(const PixelColor &, const STATE state = NO_CHANGE);
 
-    void update(uint8_t increment);
+    void update(Adafruit_NeoPixel &,uint8_t increment);
+
+    bool isNearTargetColorBy(int amount);
 
     uint8_t index;
     int r; 
@@ -88,14 +99,15 @@ public:
 
     void nextMode();
 
+    void setCurrentMode(uint8_t mode);
+
+    void increaseIncrement();
+    void decreaseIncrement();
+    void setIncrementSpeed(uint8_t speed);
+
     Adafruit_NeoPixel & getPixels() 
     {
         return this->pixels;
-    }
-
-    void setCurrentMode(uint8_t mode)
-    {
-        this->currentMode = static_cast<MODE>(mode);
     }
 
     uint8_t getCurrentMode() const volatile
@@ -103,8 +115,13 @@ public:
         return static_cast<uint8_t>(this->currentMode);
     }
 
+    uint8_t getIncrementSpeed() const volatile
+    {
+        return incrementSpeed;
+    }
+
 protected:
-    void resetColors(uint8_t brightness, bool randomTarget);
+    void resetColors(const PixelColor::STATE & state, uint8_t brightness, bool randomTarget);
     void initBreathing();
     void initLeftToRight();
     void initRightToLeft();
@@ -119,25 +136,17 @@ protected:
 private:
 
     static const uint8_t NUMPIXELS = 8;
-    
-    // Basic Colors
-    static const PixelColor WHITE;
-    static const PixelColor BLACK;
-    static const PixelColor RED;
-    static const PixelColor GREEN;
-    static const PixelColor BLUE;
 
     Adafruit_NeoPixel pixels;
     PixelColor colors[PixelMagic::NUMPIXELS];
     // PixelColor previousColors[PixelMagic::NUMPIXELS];
     PixelColor targetColor;
+    uint8_t incrementSpeed;
     volatile uint8_t brightness;
     volatile uint8_t previousBrightness;
     enum MODE currentMode;
 
     // Helpers
-    bool _update_led(const PixelColor &, PixelColor &, uint8_t increment);
-    bool _update_two_leds(const PixelColor &, PixelColor &, PixelColor &, uint8_t increment);
     void _randomize_colors(PixelColor &);
 };
 
