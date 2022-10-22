@@ -71,17 +71,27 @@ protected:
     void updateCenterOut();
     void updateOutToCenter();
 
-private:    
+private:
+    enum PIXEL_STATE
+    {
+        BEGIN,
+        FORWARD,
+        BACKWARD,
+        HALF,
+        MAX,
+        COMPLETE,
+        WAITING,
+        NOT_IN_USE,
+    };
+
     struct PixelColor
     {
         uint8_t index;
         int r; 
         int g;
         int b;
-        // Multiuse flag (alternating, forward, backward, etc)
-        bool flag;
-        // Multiuse flag (for more options)
-        bool flag2;
+        // Pixel state forgo boolean flags from before
+        enum PIXEL_STATE state;
 
         bool operator<(const PixelColor & p){
             return (r < p.r ||
@@ -129,7 +139,7 @@ private:
         void reset()
         {
             r = g = b = 0;
-            flag = flag2 = false;
+            state = BEGIN;
         }
     };
     
@@ -153,6 +163,7 @@ private:
     // Helpers
     bool _update_led(const PixelMagic::PixelColor &, PixelMagic::PixelColor &, uint8_t increment);
     bool _update_two_leds(const PixelMagic::PixelColor &, PixelMagic::PixelColor &, PixelMagic::PixelColor &, uint8_t increment);
+    void _randomize_colors(PixelMagic::PixelColor &);
 };
 
 #endif

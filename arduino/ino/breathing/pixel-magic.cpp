@@ -9,19 +9,20 @@ static const uint8_t MIN_BRIGHTNESS = 5;
 static const uint8_t MAX_BRIGHTNESS = 50;
 static const uint8_t MIN_COLOR = 25;
 static const uint8_t MAX_COLOR = 255;
-static const uint8_t COLOR_INC = 80;
+static const uint8_t COLOR_INC = 15;
+static const uint8_t MAX_COLOR_INC = 125;
+static const uint8_t MIN_COLOR_INC = 25;
 
 uint8_t randomColor(int min=MIN_COLOR)
 {
     return random(min, MAX_COLOR);
 }
 
-
-const PixelMagic::PixelColor PixelMagic::WHITE = {0,255,255,255,false,false};
-const PixelMagic::PixelColor PixelMagic::BLACK = {0,0,0,0,false,false};
-const PixelMagic::PixelColor PixelMagic::RED = {0,255,0,0,false,false};
-const PixelMagic::PixelColor PixelMagic::GREEN = {0,0,255,0,false,false};
-const PixelMagic::PixelColor PixelMagic::BLUE = {0,0,0,255,false,false};
+const PixelMagic::PixelColor PixelMagic::WHITE = {0,255,255,255,NOT_IN_USE};
+const PixelMagic::PixelColor PixelMagic::BLACK = {0,0,0,0,NOT_IN_USE};
+const PixelMagic::PixelColor PixelMagic::RED = {0,255,0,0,NOT_IN_USE};
+const PixelMagic::PixelColor PixelMagic::GREEN = {0,0,255,0,NOT_IN_USE};
+const PixelMagic::PixelColor PixelMagic::BLUE = {0,0,0,255,NOT_IN_USE};
 
 PixelMagic::PixelMagic():
 pixels(NUMPIXELS, OUT, NEO_GRB + NEO_KHZ800),
@@ -120,11 +121,9 @@ void PixelMagic::resetColors(uint8_t brightness, bool randomTarget)
     if (randomTarget)
     {
         // Color to move to
-        targetColor.r = randomColor(0);
-        targetColor.g = randomColor(0);
-        targetColor.b = randomColor(0);
+        _randomize_colors(targetColor);
         // All colors reached target?
-        targetColor.flag = targetColor.flag2 = false;
+        targetColor.state = BEGIN;
     } else {
         targetColor.reset();
     }
@@ -138,16 +137,20 @@ void PixelMagic::resetColors(uint8_t brightness, bool randomTarget)
 
 void PixelMagic::initBreathing()
 {
+    /*
     previousBrightness = brightness = MAX_BRIGHTNESS / 2;
-    targetColor.r = targetColor.g = 0;
-    targetColor.b = MAX_COLOR;
+    targetColor.r = targetColor.g = targetColor.b = 0;
+    // targetColor.b = MAX_COLOR;
     targetColor.flag = true;
+    */
+
+   resetColors(MAX_BRIGHTNESS, true);
 }
 
 void PixelMagic::initLeftToRight()
 {
     // Brightness at the bottom Increments in 5 to 50
-    resetColors(10, true);
+    resetColors(MAX_BRIGHTNESS, true);
 }
 
 void PixelMagic::initRightToLeft()
@@ -171,87 +174,93 @@ void PixelMagic::initOutToCenter()
 
 void PixelMagic::updateBreathing(){
     // Save the prior brightness in case we need to update
-    previousBrightness = brightness;
-    // Dim
-    if (!targetColor.flag)
+    //previousBrightness = brightness;
+
+    if (targetColor.state == BEGIN)
     {
-        brightness = brightness > MIN_BRIGHTNESS ? brightness - BRIGHTNESS_INC : MIN_BRIGHTNESS;
-        if (brightness == MIN_BRIGHTNESS)
+        // Move to that color
+        for(int i=0; i<NUMPIXELS; i++) // For each pixel...
         {
-            targetColor.flag = !targetColor.flag;
+            // Step along all colors until they arrive at the target
+            _update_led(targetColor, colors[i], COLOR_INC);
             
-            // Shift colors
-            targetColor.r = randomColor();
-            targetColor.g = randomColor();
-            targetColor.b = randomColor();
+            // End goal
+            if (i == NUMPIXELS-1 && colors[i].state == MAX){
+                targetColor.state = COMPLETE;
+            }
         }
-    } else if (targetColor.flag) // Increase
-    {
-        brightness = brightness < MAX_BRIGHTNESS ? brightness + BRIGHTNESS_INC : MAX_BRIGHTNESS;
-        if (brightness == MAX_BRIGHTNESS)
+    } else {
+        // Dim
+        for(int i=0; i<NUMPIXELS; i++) // For each pixel...
         {
-            targetColor.flag = !targetColor.flag;
+            // Step along all colors until they arrive at the target
+            _update_led(BLACK, colors[i], COLOR_INC);
+
+            // End goal
+            if (i == NUMPIXELS-1 && colors[i].state == COMPLETE){
+                initBreathing();
+            }
         }
     }
-
-    // Finally update the pixels
-    for(int i=0; i<NUMPIXELS; i++) // For each pixel...
-        pixels.setPixelColor(i, targetColor.r, targetColor.g, targetColor.b);
 }
 
 void PixelMagic::updateLeftToRight()
 {
-    if (targetColor.flag2)
+    if (targetColor.state == COMPLETE)
     {
-        // Do fade then reset
-        /*brightness = brightness > MIN_BRIGHTNESS ? brightness - BRIGHTNESS_INC : MIN_BRIGHTNESS;
-        if (brightness == MIN_BRIGHTNESS){
-            initLeftToRight();
-        }*/
         initLeftToRight();
-    } else if (targetColor.flag)
+    } else 
     {
+        
         for (int i = 0; i < NUMPIXELS; i++)
         {
-            // Step along all colors until they arrive at the target
-            if (!colors[i].flag2)
+            // Dim
+            if (colors[i].state == MAX && (targetColor.state == HALF || targetColor.state == MAX || targetColor.state == BACKWARD))
             {
-                if (_update_led(BLACK, colors[i], COLOR_INC))
-                {
-                    // Step brightness down
-                    previousBrightness = brightness;
-                    brightness -= BRIGHTNESS_INC;
+                _update_led(BLACK, colors[i], COLOR_INC);
+                    
+                // Only start the next one if half way there
+                if (colors[i].r > targetColor.r/2 || colors[i].g > targetColor.g/2 || colors[i].b > targetColor.b/2){
+                    break;
                 }
-                break;
-            }
-            // End goal
-            if (i == NUMPIXELS-1 && colors[i].flag2){
-                targetColor.flag2 = true;
+
+                if (i >= NUMPIXELS/2 && colors[i].state == COMPLETE){
+                    _randomize_colors(targetColor);
+                    targetColor.state = BACKWARD;
+                }
+                
+                // End goal
+                if (i == NUMPIXELS-1 && colors[i].state == COMPLETE){
+                    targetColor.state = COMPLETE;
+                }
             }
         }
-    } else {
         for (int i = 0; i < NUMPIXELS; i++)
         {
-            // Step along all colors until they arrive at the target
-            if (!colors[i].flag)
+            // Go to color
+            if (colors[i].state == BEGIN || targetColor.state == BACKWARD)
             {
-                if (_update_led(targetColor, colors[i], COLOR_INC))
-                {
-                    // Step brightness up
-                    previousBrightness = brightness;
-                    brightness += BRIGHTNESS_INC;
+                _update_led(targetColor, colors[i], COLOR_INC);
+
+                if (colors[i].r < targetColor.r/3 || colors[i].g < targetColor.g/3 || colors[i].b < targetColor.b/3){
+                    break;
                 }
-                break;
-            }
-            // End goal
-            if (i == NUMPIXELS-1 && colors[i].flag){
-                targetColor.flag = true;
+                
+                // Half way
+                if (i >= NUMPIXELS/3 && colors[i].state == MAX){
+                    targetColor.state = HALF;
+                }
+                // End goal
+                if (i == NUMPIXELS-1 && colors[i].state == MAX){
+                    targetColor.state = MAX;
+                }
             }
         }
     }
 }
 void PixelMagic::updateRightToLeft()
 {
+#if 0
     if (targetColor.flag)
     {
         // Do fade then reset
@@ -279,10 +288,12 @@ void PixelMagic::updateRightToLeft()
             }
         }
     }
+#endif
 }
 
 void PixelMagic::updateCenterOut()
 {
+#if 0
     if (targetColor.flag)
     {
         // Do fade then reset
@@ -328,9 +339,11 @@ void PixelMagic::updateCenterOut()
             targetColor.flag = true;
         }
     }
+#endif
 }
 void PixelMagic::updateOutToCenter()
 {
+#if 0
     if (targetColor.flag)
     {
         // Do fade then reset
@@ -376,29 +389,30 @@ void PixelMagic::updateOutToCenter()
             targetColor.flag = true;
         }
     }
+#endif
 }
 
 // Update one led
 bool PixelMagic::_update_led(const PixelMagic::PixelColor & targetColor, PixelMagic::PixelColor & c1, uint8_t increment)
 {
-    if (!c1.flag){
+    if (c1.state == BEGIN){
         c1.stepTo(targetColor, increment);
         
         pixels.setPixelColor(c1.index, c1.r, c1.g, c1.b);
         
         if (c1 == targetColor)
         {
-            c1.flag = true;
+            c1.state = MAX;
             return true;
         }
-    } else if (c1.flag && !c1.flag2){
+    } else if (c1.state == MAX) {
         c1.stepTo(targetColor, increment);
 
         pixels.setPixelColor(c1.index, c1.r, c1.g, c1.b);
         
         if (c1 == targetColor)
         {
-            c1.flag2 = true;
+            c1.state = COMPLETE;
             return true;
         }
     }
@@ -411,4 +425,12 @@ bool PixelMagic::_update_led(const PixelMagic::PixelColor & targetColor, PixelMa
 bool PixelMagic::_update_two_leds(const PixelMagic::PixelColor & targetColor, PixelMagic::PixelColor & c1, PixelMagic::PixelColor & c2, uint8_t increment)
 {
     return _update_led(targetColor, c1, increment) && _update_led(targetColor, c2, increment);
+}
+
+// Randomize colors
+void PixelMagic::_randomize_colors(PixelMagic::PixelColor & color)
+{
+    color.r = randomColor(0);
+    color.g = randomColor(0);
+    color.b = randomColor(0);
 }
