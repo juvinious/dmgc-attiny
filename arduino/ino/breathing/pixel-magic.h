@@ -4,6 +4,12 @@
 #include <Adafruit_NeoPixel.h>
 #include <EEPROM.h>
 
+#ifdef DMGC_SDL_ARDUINO_BUILD
+#include "dmgc-utils.h"
+#else
+#include "src/dmgc-utils/dmgc-utils.h"
+#endif
+
 class PixelColor
 {
 public:
@@ -84,8 +90,9 @@ public:
         RIGHT_TO_LEFT = 2,
         CENTER_OUT = 3,
         OUT_TO_CENTER = 4,
-        OFF = 5,
-        NUM_MODES = 6
+        RANDOM = 5,
+        OFF = 6,
+        NUM_MODES = 7
     };
 
     PixelMagic();
@@ -127,11 +134,13 @@ protected:
     void initRightToLeft();
     void initCenterOut();
     void initOutToCenter();
+    void initRandom();
     void updateBreathing();
     void updateLeftToRight();
     void updateRightToLeft();
     void updateCenterOut();
     void updateOutToCenter();
+    void updateRandom();
 
 private:
 
@@ -139,7 +148,7 @@ private:
 
     Adafruit_NeoPixel pixels;
     PixelColor colors[PixelMagic::NUMPIXELS];
-    // PixelColor previousColors[PixelMagic::NUMPIXELS];
+    int mixedOrder[PixelMagic::NUMPIXELS];
     PixelColor targetColor;
     uint8_t incrementSpeed;
     volatile uint8_t brightness;

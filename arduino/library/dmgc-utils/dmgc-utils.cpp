@@ -9,11 +9,9 @@
 
 using namespace DMGC_UTILS;
 
-
 Button::Button(int pin):
 pin(pin),
-state(UP),
-next(NULL)
+state(UP)
 {
     pinMode(pin, INPUT);
 }
@@ -70,21 +68,18 @@ void Button::poll(int pull)
 }
 
 ButtonHandler::ButtonHandler():
-totalPins(0),
-buttonList(NULL)
+totalPins(0)
 {
     
 }
 
 ButtonHandler::~ButtonHandler()
 {
-    if (buttonList){
-        Button * current = buttonList;
-        while (current)
+    for (List<Button *>::iterator i = buttonList.begin(); i != buttonList.end(); i++){
+        Button * button = *i;
+        if (button != NULL)
         {
-            Button * next = current->next;
-            delete current;
-            current = next;
+            delete button;
         }
     }
 }
@@ -92,20 +87,8 @@ ButtonHandler::~ButtonHandler()
 Button * ButtonHandler::add(int pin)
 {
     Button * newButton = new Button(pin);
-    if (!buttonList)
-    {
-        buttonList = newButton;
-    } else {
-        Button * current = buttonList;
-        while (current)
-        {
-            if (current->next == NULL){
-                current->next = newButton;
-                break;
-            }
-            current = current->next;
-        }
-    }
+    
+    buttonList.push(newButton);
 
     totalPins++;
 
@@ -114,13 +97,10 @@ Button * ButtonHandler::add(int pin)
 
 void ButtonHandler::poll(int pull)
 {
-    Button * current = buttonList;
-    while (current)
-    {
-        Button * next = current->next;
-        current->poll(pull);
-        current = next;
-    }
+   for (List<Button *>::iterator i = buttonList.begin(); i != buttonList.end(); i++){
+        Button * button = *i;
+        button->poll(pull);
+   }
 }
 
 void DMGC_UTILS::dmgc_intro(Adafruit_NeoPixel & pixels, bool skipDelays) {

@@ -236,6 +236,9 @@ void PixelMagic::update()
         case MODE::BREATHING:
             updateBreathing();
             break;
+        case MODE::RANDOM:
+            updateRandom();
+            break;
         case MODE::OFF:
         default:
             break;
@@ -257,30 +260,8 @@ void PixelMagic::show()
 void PixelMagic::nextMode()
 {
     // Cycle forward through the modes
-    this->currentMode = static_cast<MODE>((static_cast<int>(currentMode) + 1) % NUM_MODES);
-
-    switch (currentMode)
-    {
-        case MODE::LEFT_TO_RIGHT:
-            initLeftToRight();
-            break;
-        case MODE::RIGHT_TO_LEFT:
-            initRightToLeft();
-            break;
-        case MODE::CENTER_OUT:
-            initCenterOut();
-            break;
-        case MODE::OUT_TO_CENTER:
-            initOutToCenter();
-            break;
-        case MODE::BREATHING:
-            initBreathing();
-            break;
-        case MODE::OFF:
-        default:
-            resetColors(PixelColor::NOT_IN_USE, MIN_BRIGHTNESS, false);
-            break;
-    }
+    uint8_t mode = static_cast<MODE>((static_cast<int>(currentMode) + 1) % NUM_MODES);
+    setCurrentMode(mode);
 }
 
 void PixelMagic::setCurrentMode(uint8_t mode)
@@ -302,6 +283,9 @@ void PixelMagic::setCurrentMode(uint8_t mode)
             break;
         case MODE::BREATHING:
             initBreathing();
+            break;
+        case MODE::RANDOM:
+            initRandom();
             break;
         case MODE::OFF:
         default:
@@ -384,6 +368,28 @@ void PixelMagic::initCenterOut()
 void PixelMagic::initOutToCenter()
 {
     resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS, true);
+}
+
+void PixelMagic::initRandom()
+{
+    resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS, true);
+    // Set up random order
+    bool chosen[NUMPIXELS] = {false,false,false,false,false,false,false,false};
+    for (int i = 0; i < NUMPIXELS; i++){
+        int r = random(0, NUMPIXELS);
+        if (!chosen[r])
+        {
+            mixedOrder[i] = r;
+            chosen[r] = true;
+        } else {
+            while (chosen[r]){
+                r = random(0, NUMPIXELS);
+            }
+            mixedOrder[i] = r;
+            chosen[r] = true;
+        }
+    }
+    
 }
 
 void PixelMagic::updateBreathing(){
@@ -483,5 +489,24 @@ void PixelMagic::updateOutToCenter()
     if (completed == NUMPIXELS)
     {
         initOutToCenter();
+    }
+}
+
+void PixelMagic::updateRandom()
+{
+    int completed = 0;
+    for (int i = 0; i < NUMPIXELS; i++){
+        int & current = mixedOrder[i];
+        colors[current].update(pixels, incrementSpeed);
+        if (!colors[current].isNearTargetColorBy(2) && colors[current].state == PixelColor::FORWARD)
+        {
+            break;
+        }
+        completed += colors[i].state == PixelColor::COMPLETE ? 1 : 0;
+    }
+    
+    if (completed == NUMPIXELS)
+    {
+        initRandom();
     }
 }
