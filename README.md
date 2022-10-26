@@ -31,6 +31,7 @@ A more extended example, allowing for different modes.
   - Right to Left - Same as LTR, but going in the opposite direction
   - Center Out - Same as LTR, but starting from right and select and going outward
   - Out to Center - Same as LTR, but starting at up and A
+  - Random - Randomizes the order of the cycling as LTR
 
 ![Breathing Example](https://i.imgur.com/EliZcfa.gif)
 
@@ -47,7 +48,6 @@ Have fun!
 
 # TODO
 
-- Update breathing example, speed was broken before due to increments being wrong
 - Cleanup/Optimize configuration content
 - Add additional utils as needed
 - Adafruit_NeoPixel
