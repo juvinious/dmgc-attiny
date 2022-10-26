@@ -14,11 +14,16 @@ Adafruit_NeoPixel::~Adafruit_NeoPixel(){
 void Adafruit_NeoPixel::begin(void){
 }
 void Adafruit_NeoPixel::show(void){
-    Configuration::Get()->renderBackground();
-    Configuration::Get()->renderLeds();
-    if (!Configuration::Get()->isSetupComplete())
+    Configuration * config = Configuration::Get();
+    if (!config->isSetupComplete())
     {
-        Configuration::Get()->screenRender();
+        // config->screenClear();
+    }
+    config->renderBackground();
+    config->renderLeds();
+    if (!config->isSetupComplete())
+    {
+        config->screenRender();
     }
 }
 void Adafruit_NeoPixel::setPin(int16_t p){

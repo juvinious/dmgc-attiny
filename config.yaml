@@ -20,7 +20,7 @@ background:
 # Led Details
 led:
   info: true
-  alpha-modifier: 5 # 5 sdl is 0 - 255, 250 / 50 (10 possible positions)
+  alpha-modifier: 3 # 5 sdl is 0 - 255, 250 / 50 (10 possible positions)
 
 # Led placement by order
 led0:

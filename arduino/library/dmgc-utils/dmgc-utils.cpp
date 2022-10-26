@@ -125,6 +125,8 @@ void DMGC_UTILS::dmgc_intro(Adafruit_NeoPixel & pixels, bool skipDelays) {
     pixels.show();
     if (!skipDelays)
         delay(1100);
+    else
+        delay(100);
 
     int y=6;
     int k=0;
@@ -160,11 +162,21 @@ void DMGC_UTILS::dmgc_intro(Adafruit_NeoPixel & pixels, bool skipDelays) {
                 k=introarray[j];
             }
             pixels.setPixelColor(i, pixels.Color(red[k],green[k],blue[k]));
-            pixels.show();
+
+            // Improve the the time of the redraw for SDL
             delay(y);
+            if (!skipDelays)
+            {
+                pixels.show();
+            }
         }
+        // Reduce the amount of screen redraws
+        if (skipDelays)
+            pixels.show();
     }
 
     if (!skipDelays)
         delay(2000);
+    else
+        delay(100);
 }
