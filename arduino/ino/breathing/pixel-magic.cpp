@@ -55,7 +55,7 @@ nextColor(NULL)
 
 }
 
-PixelColor::PixelColor(uint8_t index, uint8_t r, uint8_t g, uint8_t b, const PixelColor::STATE & state):
+PixelColor::PixelColor(uint8_t index, int r, int g, int b, const PixelColor::STATE & state):
 index(index),
 r(r),
 g(g),
@@ -130,12 +130,14 @@ void PixelColor::random()
     b = _random_color(0);
 }
 
-void PixelColor::setNextColor(const PixelColor & color, const STATE state){
+void PixelColor::setColorAs(const PixelColor & color){
+    r = color.r;
+    g = color.g;
+    b = color.b;
+}
+
+void PixelColor::setNextColor(const PixelColor & color){
     nextColor = &color;
-    // Update state to new state if requested
-    if (state != NO_CHANGE){
-        this->state = state;
-    }
 }
 
 void PixelColor::update(Adafruit_NeoPixel & pixels, uint8_t increment)
@@ -197,6 +199,8 @@ pixels(NUMPIXELS, OUT, NEO_GRB + NEO_KHZ800),
 incrementSpeed(COLOR_INC),
 brightness(MAX_BRIGHTNESS / 2), // Start brightness in the middle,
 previousBrightness(brightness),
+randomColors(0),
+previousMode(MODE::NOT_DEFINED),
 currentMode(MODE::BREATHING)
 {
     for (int i = 0; i < NUMPIXELS; i++){
@@ -204,6 +208,8 @@ currentMode(MODE::BREATHING)
         colors[i].index = i;
     }
     initBreathing();
+    targetColor.r = targetColor.g = 0;
+    targetColor.b = 255;
 }
 
 PixelMagic::~PixelMagic(){
@@ -239,6 +245,7 @@ void PixelMagic::update()
         case MODE::RANDOM:
             updateRandom();
             break;
+        case MODE::SOLID:
         case MODE::OFF:
         default:
             break;
@@ -259,14 +266,25 @@ void PixelMagic::show()
 
 void PixelMagic::nextMode()
 {
-    // Cycle forward through the modes
-    uint8_t mode = static_cast<MODE>((static_cast<int>(currentMode) + 1) % NUM_MODES);
-    setCurrentMode(mode);
+    if (currentMode != PixelMagic::SOLID)
+    {
+        // Cycle forward through the modes
+        uint8_t mode = static_cast<MODE>((static_cast<int>(currentMode) + 1) % NUM_MODES);
+        setMode(mode);
+    }
 }
 
-void PixelMagic::setCurrentMode(uint8_t mode)
+void PixelMagic::setMode(uint8_t mode)
 {
-    currentMode = static_cast<MODE>(mode);
+    if ((mode >= 0 && mode < PixelMagic::NUM_MODES) || mode == PixelMagic::SOLID)
+    {    
+        previousMode = currentMode;
+        currentMode = static_cast<MODE>(mode);
+    } else 
+    {
+        previousMode = PixelMagic::NOT_DEFINED;
+        currentMode = PixelMagic::BREATHING;
+    }
     switch (currentMode)
     {
         case MODE::LEFT_TO_RIGHT:
@@ -287,9 +305,21 @@ void PixelMagic::setCurrentMode(uint8_t mode)
         case MODE::RANDOM:
             initRandom();
             break;
+        case MODE::SOLID:        
+            for (int i = 0; i < NUMPIXELS; i++){
+                // Set pixels to current target color
+                colors[i].setColorAs(targetColor);
+                colors[i].state = PixelColor::NO_CHANGE;
+                // Set next color to black
+                const PixelColor * t = const_cast<const PixelColor *>(&PixelColor::BLACK);
+                colors[i].setNextColor(*t);
+                // Finally set led
+                pixels.setPixelColor(i, colors[i].r, colors[i].g, colors[i].b);
+            }
+            break;
         case MODE::OFF:
         default:
-            resetColors(PixelColor::NOT_IN_USE, MIN_BRIGHTNESS, false);
+            resetColors(PixelColor::NOT_IN_USE, MIN_BRIGHTNESS);
             break;
     }
 }
@@ -322,57 +352,82 @@ void PixelMagic::setIncrementSpeed(uint8_t speed)
     }
 }
 
-void PixelMagic::resetColors(const PixelColor::STATE & state, uint8_t brightness, bool randomTarget)
+void PixelMagic::toggleRandomColors()
+{
+    this->randomColors = !this->randomColors;
+    setMode(this->currentMode);
+}
+
+void PixelMagic::toggleSolidColors()
+{
+    if (this->currentMode == SOLID)
+    {
+        setMode(previousMode != NOT_DEFINED ? previousMode : BREATHING);
+    } else {
+        setMode(SOLID);
+    }
+}
+
+void PixelMagic::toggleConfiguration()
+{
+    if (this->currentMode == CONFIGURATION)
+    {
+        setMode(previousMode != NOT_DEFINED ? previousMode : BREATHING);
+    } else {
+        setMode(CONFIGURATION);
+    }
+}
+
+void PixelMagic::resetColors(const PixelColor::STATE & state, uint8_t brightness)
 {
     // Brightness at the bottom Increments in 5 to 50
     this->previousBrightness = this->brightness = brightness;
-    if (randomTarget)
+    if (randomColors == 1)
     {
-        // Color to move to
+        // Random color to move to
         targetColor.random();
-        // All colors reached target?
-        targetColor.state = PixelColor::BEGIN;
-    } else {
-        targetColor.reset();
     }
 
     for (int i = 0; i < NUMPIXELS; i++){
         // All pixels off and reset flag
         colors[i].reset();
+        colors[i].state = state;
+        // Set next color
         const PixelColor * t = const_cast<const PixelColor *>(&targetColor);
-        colors[i].setNextColor(*t, state);
+        colors[i].setNextColor(*t);
+        // Finally set led
         pixels.setPixelColor(i, colors[i].r, colors[i].g, colors[i].b);
     }
 }
 
 void PixelMagic::initBreathing()
 {
-   resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS, true);
+   resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS);
 }
 
 void PixelMagic::initLeftToRight()
 {
-    resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS, true);
+    resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS);
 }
 
 void PixelMagic::initRightToLeft()
 {
-    resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS, true);
+    resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS);
 }
 
 void PixelMagic::initCenterOut()
 {
-    resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS, true);
+    resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS);
 }
 
 void PixelMagic::initOutToCenter()
 {
-    resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS, true);
+    resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS);
 }
 
 void PixelMagic::initRandom()
 {
-    resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS, true);
+    resetColors(PixelColor::BEGIN, MAX_BRIGHTNESS);
     // Set up random order
     bool chosen[NUMPIXELS] = {false,false,false,false,false,false,false,false};
     for (int i = 0; i < NUMPIXELS; i++){

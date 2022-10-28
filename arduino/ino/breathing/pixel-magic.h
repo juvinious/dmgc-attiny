@@ -35,7 +35,7 @@ public:
     static const PixelColor BLUE;
 
     PixelColor();
-    PixelColor(uint8_t index, uint8_t r, uint8_t g, uint8_t b, const PixelColor::STATE &);
+    PixelColor(uint8_t index, int r, int g, int b, const PixelColor::STATE &);
     PixelColor(const PixelColor &);
     ~PixelColor();
 
@@ -49,7 +49,8 @@ public:
     // Randomize Colors
     void random();
 
-    void setNextColor(const PixelColor &, const STATE state = NO_CHANGE);
+    void setColorAs(const PixelColor &);
+    void setNextColor(const PixelColor &);
 
     void update(Adafruit_NeoPixel &,uint8_t increment);
 
@@ -92,7 +93,10 @@ public:
         OUT_TO_CENTER = 4,
         RANDOM = 5,
         OFF = 6,
-        NUM_MODES = 7
+        NUM_MODES = 7,
+        SOLID = 50,
+        CONFIGURATION = 100,
+        NOT_DEFINED = 200,
     };
 
     PixelMagic();
@@ -106,29 +110,42 @@ public:
 
     void nextMode();
 
-    void setCurrentMode(uint8_t mode);
+    void setMode(uint8_t mode);
 
     void increaseIncrement();
     void decreaseIncrement();
     void setIncrementSpeed(uint8_t speed);
+    void toggleRandomColors();
+    void toggleSolidColors();
+    void toggleConfiguration();
 
     Adafruit_NeoPixel & getPixels() 
     {
         return this->pixels;
     }
 
-    uint8_t getCurrentMode() const volatile
+    const MODE & getMode() const 
+    {
+        return this->currentMode;
+    }
+
+    const uint8_t getCurrentMode() const volatile
     {
         return static_cast<uint8_t>(this->currentMode);
     }
 
-    uint8_t getIncrementSpeed() const volatile
+    const uint8_t getIncrementSpeed() const volatile
     {
         return incrementSpeed;
     }
 
+    const bool isInConfiguration() const 
+    {
+        return this->currentMode == CONFIGURATION;
+    }
+
 protected:
-    void resetColors(const PixelColor::STATE & state, uint8_t brightness, bool randomTarget);
+    void resetColors(const PixelColor::STATE & state, uint8_t brightness);
     void initBreathing();
     void initLeftToRight();
     void initRightToLeft();
@@ -153,6 +170,8 @@ private:
     uint8_t incrementSpeed;
     volatile uint8_t brightness;
     volatile uint8_t previousBrightness;
+    volatile uint8_t randomColors;
+    enum MODE previousMode;
     enum MODE currentMode;
 
     // Helpers

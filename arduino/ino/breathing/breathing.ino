@@ -34,11 +34,9 @@ void setup() {
   EEPROM.get(0, mode);
   EEPROM.get(1, increment);
 
-  if (mode >= 0 && mode < PixelMagic::NUM_MODES)
-    magic.setCurrentMode(mode);
-  else magic.setCurrentMode(PixelMagic::BREATHING);
+  magic.setMode(mode);
   magic.setIncrementSpeed(increment);
-
+  
 
   // Add buttons
   NAVIGATION = buttons.add(PCINT3);
@@ -69,6 +67,7 @@ void setup() {
     };
   }
 }
+
 void loop()
 {
   // Update current mode
@@ -84,6 +83,10 @@ void loop()
     }
     if (RIGHT->isClicked()) {
       magic.increaseIncrement();
+      settingsChanged = true;
+    }  
+    if (SELECT->isClicked()){
+      magic.toggleSolidColors();
       settingsChanged = true;
     }
   } 
