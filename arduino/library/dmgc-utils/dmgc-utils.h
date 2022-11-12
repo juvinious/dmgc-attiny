@@ -208,6 +208,9 @@ namespace DMGC_UTILS
 
     private: 
         int pin;
+        // Add debounce handling
+        uint8_t previousPoll;
+        uint8_t debounceTime;
         enum STATE state;
     };
 

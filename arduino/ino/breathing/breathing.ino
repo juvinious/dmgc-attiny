@@ -86,7 +86,7 @@ void loop()
       settingsChanged = true;
     }  
     if (SELECT->isClicked()){
-      magic.toggleSolidColors();
+      magic.toggleRandomColors();
       settingsChanged = true;
     }
   } 

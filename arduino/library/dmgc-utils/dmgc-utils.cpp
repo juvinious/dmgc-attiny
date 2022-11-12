@@ -3,11 +3,23 @@
 
 #ifdef DMGC_SDL_ARDUINO_BUILD
 #include "arduino_defs.h"
+#include <sys/time.h>
+
+long long millis()
+{
+    struct timeval tv;
+
+    gettimeofday(&tv,NULL);
+    return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);
+}
+
 #else
 #include "Arduino.h"
 #endif
 
 using namespace DMGC_UTILS;
+
+static const uint8_t DEBOUNCE_DELAY = 50;
 
 Button::Button(int pin):
 pin(pin),
@@ -22,49 +34,64 @@ Button::~Button()
 
 void Button::poll(int pull)
 {
-    switch (digitalRead(pin)){
-        case HIGH:
-            if (pull == LOW)
-            {
-                if (state == UP){
-                state = DOWN;
-                } else if (state == DOWN){
-                state = HOLD;
-                }
-            } else if (pull == HIGH)
-            {
-                if (state == DOWN){
-                state = PRESS;
-                } else if (state == HOLD){
-                state = RELEASE;
-                } else {
-                state = UP;
-                }
-            }
-            break;
-        case LOW:
-            if (pull == HIGH)
-            {
-                if (state == UP){
-                state = DOWN;
-                } else if (state == DOWN){
-                state = HOLD;
-                }
-            } else if (pull == LOW)
-            {
-                if (state == DOWN){
-                state = PRESS;
-                } else if (state == HOLD){
-                state = RELEASE;
-                } else {
-                state = UP;
-                }
-            }
-            break;
-        default:
-            state = UP;
-            break;
+    uint8_t read = digitalRead(pin);
+    if (read != previousPoll)
+    {
+        debounceTime = millis();
     }
+
+    if ((millis() - debounceTime) > DEBOUNCE_DELAY)
+    {
+        // Debounce OK, allow change of state
+        //switch (digitalRead(pin)){
+        switch (read)
+        {
+            case HIGH:
+                if (pull == LOW)
+                {
+                    if (state == UP){
+                    state = DOWN;
+                    } else if (state == DOWN){
+                    state = HOLD;
+                    }
+                } else if (pull == HIGH)
+                {
+                    if (state == DOWN){
+                    state = PRESS;
+                    } else if (state == HOLD){
+                    state = RELEASE;
+                    } else {
+                    state = UP;
+                    }
+                }
+                break;
+            case LOW:
+                if (pull == HIGH)
+                {
+                    if (state == UP){
+                    state = DOWN;
+                    } else if (state == DOWN){
+                    state = HOLD;
+                    }
+                } else if (pull == LOW)
+                {
+                    if (state == DOWN){
+                    state = PRESS;
+                    } else if (state == HOLD){
+                    state = RELEASE;
+                    } else {
+                    state = UP;
+                    }
+                }
+                break;
+            default:
+                state = UP;
+                break;
+        }
+    }
+
+    // Set previous state
+    previousPoll = read;
 }
 
 ButtonHandler::ButtonHandler():

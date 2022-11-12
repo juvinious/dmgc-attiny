@@ -180,6 +180,7 @@ void PixelColor::update(Adafruit_NeoPixel & pixels, uint8_t increment)
         case COMPLETE:
         case WAITING:
         case NOT_IN_USE:
+        case NO_CHANGE:
         default:
             break;
     }
@@ -276,10 +277,11 @@ void PixelMagic::nextMode()
 
 void PixelMagic::setMode(uint8_t mode)
 {
-    if ((mode >= 0 && mode < PixelMagic::NUM_MODES) || mode == PixelMagic::SOLID)
+    MODE updateToMode = static_cast<MODE>(mode);
+    if (isValidMode(updateToMode))
     {    
         previousMode = currentMode;
-        currentMode = static_cast<MODE>(mode);
+        currentMode = updateToMode;
     } else 
     {
         previousMode = PixelMagic::NOT_DEFINED;
@@ -564,4 +566,27 @@ void PixelMagic::updateRandom()
     {
         initRandom();
     }
+}
+
+bool PixelMagic::isValidMode(const enum MODE & mode)
+{
+    switch (mode)
+    {
+        case BREATHING:
+        case LEFT_TO_RIGHT:
+        case RIGHT_TO_LEFT:
+        case CENTER_OUT:
+        case OUT_TO_CENTER:
+        case RANDOM:
+        case OFF:
+        case SOLID:
+        case CONFIGURATION:
+        case NOT_DEFINED:
+            return true;
+            break;
+        case NUM_MODES:
+        default:
+            break;
+    }
+    return false;
 }

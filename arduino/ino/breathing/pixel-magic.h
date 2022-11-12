@@ -175,7 +175,8 @@ private:
     enum MODE currentMode;
 
     // Helpers
-    void _randomize_colors(PixelColor &);
+    // Check state is valid
+    bool isValidMode(const enum MODE &);
 };
 
 #endif
